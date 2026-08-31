@@ -11,6 +11,8 @@ import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
 import warnings
+import os
+from datetime import datetime
 
 warnings.filterwarnings('ignore')
 
@@ -28,13 +30,16 @@ LABEL_RINGKAS = {c: c.replace('asesmen_', '').replace('_', ' ').title() for c in
 
 
 @st.cache_data
-def muat_data():
-    d = pd.read_csv(BERKAS, dtype={'kode_pegawai': str})
+def muat_data(path, cap_waktu):
+    # cap_waktu ikut menjadi kunci cache, sehingga berkas yang diperbarui
+    # otomatis dimuat ulang tanpa perlu membersihkan cache secara manual
+    d = pd.read_csv(path, dtype={'kode_pegawai': str})
     return d.rename(columns={'kode_pegawai': 'nip'})   # kode semu sebagai kunci pengelompokan
 
 
 try:
-    ds = muat_data()
+    _mtime = os.path.getmtime(BERKAS)
+    ds = muat_data(BERKAS, _mtime)
 except FileNotFoundError:
     st.error(f"Berkas **{BERKAS}** tidak ditemukan. "
              "Letakkan berkas dataset pada folder yang sama dengan app.py.")
@@ -56,6 +61,16 @@ with st.sidebar:
     st.metric("Baris dataset", f"{len(ds):,}")
     st.metric("Pegawai aktif", aktif.nip.nunique())
     st.metric("Baris berlabel SKP", len(berlabel))
+    st.markdown("---")
+    with st.expander("Info berkas data"):
+        st.caption(f"**Berkas:** `{BERKAS}`")
+        st.caption(f"**Diperbarui:** {datetime.fromtimestamp(_mtime):%d %b %Y %H:%M}")
+        _p26 = int((aktif[aktif.tahun == 2026].penugasan_jumlah.fillna(0) > 0).sum())
+        st.caption(f"**Penugasan 2026:** {_p26} pegawai")
+        st.caption(f"**Jumlah kolom:** {ds.shape[1]}")
+        if st.button("Muat ulang data", use_container_width=True):
+            st.cache_data.clear()
+            st.rerun()
 
 st.title("Dataset Penelitian dan Uji Kelayakan Model")
 st.caption("Aplikasi pendukung seminar proposal — menampilkan profil data yang akan "
@@ -76,8 +91,8 @@ with tab1:
     sumber = pd.DataFrame([
         ["absensi", "baru + lama", "80.578", "26.118 baris ganda dibuang"],
         ["apel", "baru + lama", "50.271", "16.898 ganda; 8.595 hanya ada di sistem lama"],
-        ["riwayat_penugasan", "lama", "5.848", "satu-satunya sumber bertanggal kegiatan"],
-        ["riwayat_penugasan", "baru", "930", "penempatan unit/jabatan, tanpa tahun"],
+        ["riwayat_penugasan", "lama", "5.848", "kegiatan tahun 2023–2025"],
+        ["riwayat_penugasan", "baru", "930", "kegiatan tahun 2026, 309 kegiatan berbeda"],
         ["riwayat_pelatihan", "baru", "1.481", "39 baris tergeser; 1.447 tahun dipulihkan"],
         ["rekap asesmen", "—", "2 lembar", "9 indikator kompetensi, skala 1–3"],
         ["Monev SKP 2024 & 2025", "—", "4 berkas", "predikat Baik / Sangat Baik"],
@@ -115,10 +130,11 @@ with tab1:
     fig.update_layout(height=320, margin=dict(t=30, b=10))
     st.plotly_chart(fig, use_container_width=True)
 
-    st.info("**Konsekuensi bagi rancangan penelitian.** Hanya tahun 2025 yang memuat "
-            "seluruh indikator sekaligus predikat SKP. Karena itu pemodelan dijalankan "
-            "dalam tiga skenario yang saling melengkapi sebagai uji ketegaran, bukan "
-            "memilih salah satu.")
+    st.info("**Konsekuensi bagi rancangan penelitian.** Presensi baru terekam mulai "
+            "Februari 2025, sedangkan predikat SKP hanya tersedia untuk 2024 dan 2025. "
+            "Hanya tahun 2025 yang memuat seluruh indikator sekaligus predikat SKP. "
+            "Karena itu pemodelan dijalankan dalam tiga skenario yang saling melengkapi "
+            "sebagai uji ketegaran, bukan memilih salah satu.")
 
     st.markdown("---")
     st.subheader("Pratinjau Dataset")
