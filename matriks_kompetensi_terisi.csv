@@ -1,0 +1,208 @@
+jabatan,pendidikan,kelompok_pegawai,masa_kerja_tahun,asesmen_total,asesmen_tersedia,jenj_minta,thn_minta,pelatihan_kumulatif,apel_persen_hadir,apel_alpa,pelatihan_2026,mk_jenjang,k_formal,k_nonformal,k_terampil,k_alaman,kompetensi_total,kompetensi_sesuai,kesenjangan,kode_pegawai
+Widyaiswara Ahli Madya,S2,Fungsional,31.0,17.0,1.0,5,2,2,12.5,5,1,6.0,3.0,2,2.0,3.0,10.0,1,2.0,PEG001
+Widyaiswara Ahli Madya,S2,Fungsional,36.0,16.0,1.0,5,2,2,50.0,3,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG002
+Widyaiswara Ahli Madya,S2,Fungsional,35.0,17.0,1.0,5,2,2,50.0,2,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG003
+Widyaiswara Ahli Madya,S2,Fungsional,35.0,17.0,1.0,5,2,4,50.0,1,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG004
+Widyaiswara Ahli Madya,S2,Fungsional,35.0,,0.0,5,2,2,0.0,7,0,6.0,3.0,1,,3.0,,,,PEG005
+Widyaiswara Ahli Madya,S2,Fungsional,27.0,17.0,1.0,5,2,3,50.0,2,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG006
+Operator Layanan Operasional,SMA/SMK,Pelaksana,17.0,18.0,1.0,4,0,1,0.0,3,0,3.0,1.0,1,2.0,3.0,7.0,0,5.0,PEG007
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,36.0,14.0,1.0,4,0,2,62.5,0,0,3.0,1.0,1,1.0,3.0,6.0,0,6.0,PEG008
+Operator Layanan Operasional,SMA/SMK,Pelaksana,38.0,16.0,1.0,4,0,1,25.0,5,0,3.0,1.0,1,2.0,3.0,7.0,0,5.0,PEG009
+Pengolah Data dan Informasi,D3,Pelaksana,35.0,17.0,1.0,5,1,2,12.5,1,0,4.0,1.0,1,2.0,3.0,7.0,0,5.0,PEG010
+Penelaah Teknis Kebijakan,S1,Pelaksana,36.0,15.0,1.0,5,2,1,12.5,5,0,5.0,2.0,1,2.0,3.0,8.0,0,4.0,PEG011
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,36.0,12.0,1.0,4,0,3,50.0,1,0,3.0,1.0,1,1.0,3.0,6.0,0,6.0,PEG012
+Operator Layanan Operasional,SMA/SMK,Pelaksana,35.0,13.0,1.0,4,0,3,37.5,3,0,3.0,1.0,1,1.0,3.0,6.0,0,6.0,PEG013
+Penelaah Teknis Kebijakan,S1,Pelaksana,35.0,13.0,1.0,5,2,3,37.5,4,0,5.0,2.0,1,1.0,3.0,7.0,0,5.0,PEG014
+Pengolah Data dan Informasi,S1,Pelaksana,35.0,22.0,1.0,5,1,2,62.5,2,0,5.0,2.0,1,3.0,3.0,9.0,1,3.0,PEG015
+Operator Layanan Operasional,SD,Pelaksana,35.0,,0.0,4,0,1,37.5,3,0,1.0,1.0,1,,3.0,,,,PEG016
+Penelaah Teknis Kebijakan,S1,Pelaksana,35.0,21.0,1.0,5,2,3,62.5,1,0,5.0,2.0,1,3.0,3.0,9.0,1,3.0,PEG017
+Penelaah Teknis Kebijakan,S1,Pelaksana,35.0,16.0,1.0,5,2,4,62.5,0,0,5.0,2.0,1,2.0,3.0,8.0,0,4.0,PEG018
+Operator Layanan Operasional,SMA/SMK,Pelaksana,18.0,16.0,1.0,4,0,3,75.0,1,0,3.0,1.0,1,2.0,3.0,7.0,0,5.0,PEG019
+Widyaiswara Ahli Madya,S2,Fungsional,35.0,25.0,1.0,5,2,4,62.5,2,0,6.0,3.0,1,3.0,3.0,10.0,1,2.0,PEG020
+Operator Layanan Operasional,SMA/SMK,Pelaksana,35.0,17.0,1.0,4,0,3,75.0,1,1,3.0,1.0,2,2.0,3.0,8.0,0,4.0,PEG021
+Widyaiswara Ahli Madya,S3,Fungsional,35.0,19.0,1.0,5,2,5,0.0,4,0,7.0,3.0,1,3.0,3.0,10.0,1,2.0,PEG022
+Operator Layanan Operasional,SMA/SMK,Pelaksana,35.0,,0.0,4,0,1,0.0,5,0,3.0,1.0,1,,3.0,,,,PEG023
+Penelaah Teknis Kebijakan,S2,Pelaksana,35.0,14.0,1.0,5,2,1,75.0,1,0,6.0,3.0,1,1.0,3.0,8.0,0,4.0,PEG024
+Operator Layanan Operasional,SMA/SMK,Pelaksana,35.0,11.0,1.0,4,0,3,87.5,0,0,3.0,1.0,1,1.0,3.0,6.0,0,6.0,PEG025
+Pengelola Umum Operasional,SMA/SMK,Pelaksana,,,0.0,4,1,0,87.5,0,0,3.0,1.0,1,,,,,,PEG026
+Pengelola Umum Operasional,SMA/SMK,Pelaksana,,,0.0,4,1,0,50.0,0,0,3.0,1.0,1,,,,,,PEG027
+Operator Layanan Operasional,SMA/SMK,Pelaksana,35.0,15.0,1.0,4,0,1,0.0,6,0,3.0,1.0,1,2.0,3.0,7.0,0,5.0,PEG028
+Penelaah Teknis Kebijakan,S1,Pelaksana,20.0,12.0,1.0,5,2,3,25.0,4,0,5.0,2.0,1,1.0,3.0,7.0,0,5.0,PEG029
+Pengembang Teknologi Pembelajaran Ahli Pertama,S1,Fungsional,23.0,24.0,1.0,5,1,3,0.0,7,1,5.0,2.0,2,3.0,3.0,10.0,1,2.0,PEG030
+Operator Layanan Operasional,SMA/SMK,Pelaksana,35.0,11.0,1.0,4,0,2,87.5,0,0,3.0,1.0,1,1.0,3.0,6.0,0,6.0,PEG031
+Penelaah Teknis Kebijakan,S1,Pelaksana,36.0,23.0,1.0,5,2,1,87.5,0,0,5.0,2.0,1,3.0,3.0,9.0,1,3.0,PEG032
+Pengembang Teknologi Pembelajaran Ahli Muda,S2,Fungsional,24.0,17.0,1.0,5,2,3,62.5,2,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG033
+Operator Layanan Operasional,SMA/SMK,Pelaksana,35.0,12.0,1.0,4,0,4,87.5,0,0,3.0,1.0,1,1.0,3.0,6.0,0,6.0,PEG034
+Operator Layanan Operasional,SMP,Pelaksana,35.0,,0.0,4,0,1,25.0,3,0,2.0,1.0,1,,3.0,,,,PEG035
+Operator Layanan Operasional,SMA/SMK,Pelaksana,36.0,16.0,1.0,4,0,2,0.0,7,0,3.0,1.0,1,2.0,3.0,7.0,0,5.0,PEG036
+Widyaiswara Ahli Madya,S2,Fungsional,25.0,16.0,1.0,5,2,8,62.5,2,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG037
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,37.5,0,0,3.0,1.0,1,,,,,,PEG038
+Operator Layanan Operasional,SMA/SMK,Pelaksana,35.0,11.0,1.0,4,0,3,87.5,0,0,3.0,1.0,1,1.0,3.0,6.0,0,6.0,PEG039
+Pengolah Data dan Informasi,S1,Pelaksana,24.0,21.0,1.0,5,1,3,0.0,6,0,5.0,2.0,1,3.0,3.0,9.0,1,3.0,PEG040
+Operator Layanan Operasional,SMA/SMK,Pelaksana,33.0,17.0,1.0,4,0,2,37.5,3,0,3.0,1.0,1,2.0,3.0,7.0,0,5.0,PEG041
+Widyaiswara Ahli Madya,S2,Fungsional,20.0,17.0,1.0,5,2,1,62.5,1,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG042
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,32.0,12.0,1.0,4,0,3,87.5,0,0,3.0,1.0,1,1.0,3.0,6.0,0,6.0,PEG043
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,36.0,25.0,1.0,4,0,1,25.0,4,0,3.0,1.0,1,3.0,3.0,8.0,0,4.0,PEG044
+Widyaiswara Ahli Madya,S2,Fungsional,20.0,16.0,1.0,5,2,0,25.0,5,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG045
+Widyaiswara Ahli Madya,S3,Fungsional,23.0,13.0,1.0,5,2,15,37.5,3,0,7.0,3.0,1,1.0,3.0,8.0,0,4.0,PEG046
+Operator Layanan Operasional,SMA/SMK,Pelaksana,34.0,16.0,1.0,4,0,1,62.5,2,0,3.0,1.0,1,2.0,3.0,7.0,0,5.0,PEG047
+Operator Layanan Operasional,SMA/SMK,Pelaksana,34.0,15.0,1.0,4,0,4,75.0,0,1,3.0,1.0,2,2.0,3.0,8.0,0,4.0,PEG048
+Penelaah Teknis Kebijakan,S1,Pelaksana,24.0,,0.0,5,2,1,62.5,1,0,5.0,2.0,1,,3.0,,,,PEG049
+Pengembang Teknologi Pembelajaran Ahli Muda,S1,Fungsional,23.0,15.0,1.0,5,2,8,62.5,1,0,5.0,2.0,1,2.0,3.0,8.0,0,4.0,PEG050
+Operator Layanan Operasional,SMA/SMK,Pelaksana,17.0,17.0,1.0,4,0,5,62.5,2,0,3.0,1.0,1,2.0,3.0,7.0,0,5.0,PEG051
+Pengelola Umum Operasional,SMA/SMK,Pelaksana,0.0,,0.0,4,1,0,75.0,1,0,3.0,1.0,1,,1.0,,,,PEG052
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,50.0,1,0,3.0,1.0,1,,2.0,,,,PEG053
+Arsiparis Ahli Muda,S1,Fungsional,24.0,15.0,1.0,5,2,19,87.5,0,0,5.0,2.0,1,2.0,3.0,8.0,0,4.0,PEG054
+Pengelola Umum Operasional,SMA/SMK,Pelaksana,,,0.0,4,1,0,87.5,0,0,3.0,1.0,1,,,,,,PEG055
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,,,,,PEG056
+Operator Layanan Operasional,SMP,Pelaksana,18.0,14.0,1.0,4,0,1,62.5,2,0,2.0,1.0,1,1.0,3.0,6.0,0,6.0,PEG057
+Pengelola Umum Operasional,SMA/SMK,Pelaksana,,,0.0,4,1,0,87.5,0,0,3.0,1.0,1,,,,,,PEG058
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,1,87.5,0,1,3.0,1.0,2,,2.0,,,,PEG059
+Pengolah Data dan Informasi,D3,Pelaksana,18.0,15.0,1.0,5,1,2,0.0,3,0,4.0,1.0,1,2.0,3.0,7.0,0,5.0,PEG060
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,62.5,0,0,3.0,1.0,1,,,,,,PEG061
+Widyaiswara Ahli Madya,S3,Fungsional,23.0,17.0,1.0,5,2,1,0.0,7,0,7.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG062
+Operator Layanan Operasional,SMP,Pelaksana,16.0,17.0,1.0,4,0,3,50.0,3,1,2.0,1.0,2,2.0,3.0,8.0,0,4.0,PEG063
+Kepala Bagian Tata Usaha,S2,Struktural,23.0,17.0,1.0,5,4,5,50.0,0,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG064
+Penelaah Teknis Kebijakan,S1,Pelaksana,29.0,16.0,1.0,5,2,5,75.0,0,0,5.0,2.0,1,2.0,3.0,8.0,0,4.0,PEG065
+Operator Layanan Operasional,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,50.0,1,0,3.0,1.0,1,,2.0,,,,PEG066
+Operator Layanan Operasional,SMA/SMK,Pelaksana,17.0,,0.0,4,0,1,87.5,0,0,3.0,1.0,1,,3.0,,,,PEG067
+Kepala,S3,Struktural,,,,5,5,4,62.5,0,0,7.0,3.0,1,,,,,,PEG068
+Operator Layanan Operasional,SMA/SMK,Pelaksana,0.0,,0.0,4,0,5,62.5,0,1,3.0,1.0,2,,2.0,,,,PEG069
+Operator Layanan Operasional,SMA/SMK,Pelaksana,18.0,14.0,1.0,4,0,2,75.0,1,0,3.0,1.0,1,1.0,3.0,6.0,0,6.0,PEG070
+Operator Layanan Operasional,SMA/SMK,Pelaksana,0.0,,0.0,4,0,1,87.5,0,1,3.0,1.0,2,,2.0,,,,PEG071
+Perencana Ahli Pertama,S2,Fungsional,20.0,26.0,1.0,5,1,10,37.5,4,1,6.0,3.0,2,3.0,3.0,11.0,1,1.0,PEG072
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,50.0,0,0,3.0,1.0,1,,,,,,PEG073
+Widyaiswara Ahli Madya,S2,Fungsional,23.0,15.0,1.0,5,2,2,37.5,2,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG074
+Pengembang Teknologi Pembelajaran Ahli Muda,S1,Fungsional,20.0,14.0,1.0,5,2,6,62.5,0,0,5.0,2.0,1,1.0,3.0,7.0,0,5.0,PEG075
+Operator Layanan Operasional,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,2.0,,,,PEG076
+Widyaiswara Ahli Pertama,S2,Fungsional,20.0,16.0,1.0,5,1,6,37.5,3,4,6.0,3.0,3,2.0,3.0,11.0,1,1.0,PEG077
+Pengelola Umum Operasional,SMA/SMK,Pelaksana,0.0,,0.0,4,1,0,87.5,0,0,3.0,1.0,1,,1.0,,,,PEG078
+Widyaiswara Ahli Madya,S2,Fungsional,23.0,18.0,1.0,5,2,3,62.5,2,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG079
+Pengelola Umum Operasional,SMA/SMK,Pelaksana,,,0.0,4,1,0,62.5,2,0,3.0,1.0,1,,,,,,PEG080
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,75.0,0,0,3.0,1.0,1,,,,,,PEG081
+Operator Layanan Operasional,SMA/SMK,Pelaksana,16.0,16.0,1.0,4,0,3,87.5,0,0,3.0,1.0,1,2.0,3.0,7.0,0,5.0,PEG082
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,62.5,1,0,3.0,1.0,1,,,,,,PEG083
+Pengelola Umum Operasional,SMA/SMK,Pelaksana,,,0.0,4,1,0,62.5,2,0,3.0,1.0,1,,,,,,PEG084
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,75.0,0,0,3.0,1.0,1,,2.0,,,,PEG085
+Widyaiswara Ahli Pertama,S2,Fungsional,23.0,15.0,1.0,5,1,4,12.5,5,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG086
+Widyaiswara Ahli Madya,S2,Fungsional,23.0,14.0,1.0,5,2,4,50.0,2,0,6.0,3.0,1,1.0,3.0,8.0,0,4.0,PEG087
+Penelaah Teknis Kebijakan,S1,Pelaksana,20.0,16.0,1.0,5,2,3,62.5,2,0,5.0,2.0,1,2.0,3.0,8.0,0,4.0,PEG088
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,,,,,PEG089
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,50.0,0,0,3.0,1.0,1,,,,,,PEG090
+Widyaiswara Ahli Madya,S2,Fungsional,24.0,16.0,1.0,5,2,5,75.0,0,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG091
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,,,,,PEG092
+Pengembang Teknologi Pembelajaran Ahli Muda,S1,Fungsional,23.0,18.0,1.0,5,2,6,37.5,3,0,5.0,2.0,1,2.0,3.0,8.0,0,4.0,PEG093
+Widyaiswara Ahli Madya,S2,Fungsional,20.0,14.0,1.0,5,2,4,37.5,3,0,6.0,3.0,1,1.0,3.0,8.0,0,4.0,PEG094
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,62.5,0,0,3.0,1.0,1,,,,,,PEG095
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,1,62.5,0,1,3.0,1.0,2,,,,,,PEG096
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,,,,,PEG097
+Widyaiswara Ahli Madya,S2,Fungsional,20.0,16.0,1.0,5,2,2,37.5,3,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG098
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,23.0,18.0,1.0,4,0,8,75.0,0,0,3.0,1.0,1,2.0,3.0,7.0,0,5.0,PEG099
+Perencana Ahli Pertama,S1,Fungsional,20.0,14.0,1.0,5,1,6,50.0,2,0,5.0,2.0,1,1.0,3.0,7.0,0,5.0,PEG100
+Pengolah Data dan Informasi,S1,Pelaksana,,,,5,1,0,60.0,0,0,5.0,2.0,1,,,,,,PEG101
+Penata Layanan Operasional,S1,Pelaksana,0.0,,0.0,5,1,0,75.0,0,0,5.0,2.0,1,,1.0,,,,PEG102
+Perencana Ahli Pertama,S1,Fungsional,15.0,13.0,1.0,5,1,1,25.0,3,0,5.0,2.0,1,1.0,3.0,7.0,0,5.0,PEG103
+Pengembang Teknologi Pembelajaran Ahli Muda,S1,Fungsional,20.0,16.0,1.0,5,2,4,75.0,1,0,5.0,2.0,1,2.0,3.0,8.0,0,4.0,PEG104
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,0.0,4,0,3.0,1.0,1,,2.0,,,,PEG105
+Widyaiswara Ahli Madya,S2,Fungsional,20.0,18.0,1.0,5,2,4,37.5,2,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG106
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,62.5,0,0,3.0,1.0,1,,,,,,PEG107
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,75.0,1,0,3.0,1.0,1,,2.0,,,,PEG108
+Pengembang Teknologi Pembelajaran Ahli Pertama,S1,Fungsional,20.0,17.0,1.0,5,1,3,0.0,0,0,5.0,2.0,1,2.0,3.0,8.0,0,4.0,PEG109
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,,,,,PEG110
+Pengembang Teknologi Pembelajaran Ahli Muda,S2,Fungsional,20.0,15.0,1.0,5,2,2,50.0,3,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG111
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,62.5,0,0,3.0,1.0,1,,,,,,PEG112
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,,,,,PEG113
+Widyaiswara Ahli Madya,S2,Fungsional,20.0,18.0,1.0,5,2,4,62.5,1,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG114
+Pengembang Teknologi Pembelajaran Ahli Muda,S1,Fungsional,20.0,15.0,1.0,5,2,6,50.0,3,0,5.0,2.0,1,2.0,3.0,8.0,0,4.0,PEG115
+Pengembang Teknologi Pembelajaran Ahli Muda,S2,Fungsional,23.0,15.0,1.0,5,2,2,37.5,3,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG116
+Pranata Laboratorium Pendidikan Ahli Pertama,S1,Fungsional,1.0,12.0,1.0,5,1,2,62.5,2,0,5.0,2.0,1,1.0,2.0,6.0,0,6.0,PEG117
+Pengelola Umum Operasional,SMA/SMK,Pelaksana,0.0,,0.0,4,1,0,87.5,0,0,3.0,1.0,1,,1.0,,,,PEG118
+Widyaiswara Ahli Madya,S2,Fungsional,20.0,13.0,1.0,5,2,9,50.0,3,0,6.0,3.0,1,1.0,3.0,8.0,0,4.0,PEG119
+Widyaiswara Ahli Madya,S2,Fungsional,20.0,18.0,1.0,5,2,2,12.5,4,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG120
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,50.0,0,0,3.0,1.0,1,,,,,,PEG121
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,,,,,PEG122
+Pranata Laboratorium Pendidikan Terampil,D3,Fungsional,1.0,15.0,1.0,4,1,2,87.5,0,0,4.0,2.0,1,2.0,2.0,7.0,0,5.0,PEG123
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,2.0,,,,PEG124
+Operator Layanan Operasional,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,62.5,0,0,3.0,1.0,1,,2.0,,,,PEG125
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,,,,,PEG126
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,75.0,1,0,3.0,1.0,1,,2.0,,,,PEG127
+Widyaiswara Ahli Madya,S2,Fungsional,20.0,12.0,1.0,5,2,5,12.5,5,0,6.0,3.0,1,1.0,3.0,8.0,0,4.0,PEG128
+Pengelola Umum Operasional,SMA/SMK,Pelaksana,,,0.0,4,1,0,87.5,0,0,3.0,1.0,1,,,,,,PEG129
+Widyaiswara Ahli Pertama,S2,Fungsional,1.0,,0.0,5,1,6,50.0,3,1,6.0,3.0,2,,2.0,,,,PEG130
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,62.5,0,0,3.0,1.0,1,,,,,,PEG131
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,62.5,0,0,3.0,1.0,1,,,,,,PEG132
+Widyaiswara Ahli Pertama,S2,Fungsional,1.0,14.0,1.0,5,1,4,50.0,3,0,6.0,3.0,1,1.0,2.0,7.0,0,5.0,PEG133
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,12.5,3,0,3.0,1.0,1,,2.0,,,,PEG134
+Widyaiswara Ahli Pertama,S2,Pelaksana,10.0,12.0,1.0,5,1,3,25.0,3,0,6.0,3.0,1,1.0,3.0,8.0,0,4.0,PEG135
+Analis SDM Aparatur Ahli Muda,S1,Fungsional,15.0,17.0,1.0,5,2,17,75.0,0,2,5.0,2.0,2,2.0,3.0,9.0,1,3.0,PEG136
+Operator Layanan Operasional,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,2.0,,,,PEG137
+Penelaah Teknis Kebijakan,,Pelaksana,10.0,14.0,1.0,5,2,30,50.0,2,1,,,2,1.0,3.0,,,,PEG138
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,62.5,2,0,3.0,1.0,1,,,,,,PEG139
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,37.5,0,0,3.0,1.0,1,,,,,,PEG140
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,,,,,PEG141
+Pengembang Teknologi Pembelajaran Ahli Muda,S2,Fungsional,10.0,16.0,1.0,5,2,14,75.0,1,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG142
+Widyaiswara Ahli Pertama,S2,Fungsional,1.0,14.0,1.0,5,1,12,75.0,0,0,6.0,3.0,1,1.0,2.0,7.0,0,5.0,PEG143
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,75.0,1,0,3.0,1.0,1,,2.0,,,,PEG144
+Pengelola Umum Operasional,SMA/SMK,Pelaksana,,,0.0,4,1,0,87.5,0,0,3.0,1.0,1,,,,,,PEG145
+Penata Layanan Operasional,S1,Pelaksana,0.0,,0.0,5,1,0,50.0,2,0,5.0,2.0,1,,1.0,,,,PEG146
+Widyaiswara Ahli Muda,S2,Fungsional,15.0,17.0,1.0,5,2,7,12.5,4,0,6.0,3.0,1,2.0,3.0,9.0,1,3.0,PEG147
+Penelaah Teknis Kebijakan,S2,Pelaksana,15.0,14.0,1.0,5,2,4,37.5,3,0,6.0,3.0,1,1.0,3.0,8.0,0,4.0,PEG148
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,37.5,1,0,3.0,1.0,1,,2.0,,,,PEG149
+Arsiparis Mahir,D3,Fungsional,1.0,13.0,1.0,4,2,7,75.0,0,0,4.0,2.0,1,1.0,1.0,5.0,0,7.0,PEG150
+Pengembang Teknologi Pembelajaran Ahli Muda,S1,Fungsional,15.0,25.0,1.0,5,2,2,62.5,2,0,5.0,2.0,1,3.0,3.0,9.0,1,3.0,PEG151
+Pengelola Umum Operasional,SMA/SMK,Pelaksana,0.0,,0.0,4,1,0,87.5,0,0,3.0,1.0,1,,1.0,,,,PEG152
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,,,,,PEG153
+Operator Layanan Operasional,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,2.0,,,,PEG154
+Penata Layanan Operasional,D4,Pelaksana,0.0,,0.0,5,1,0,87.5,0,0,5.0,2.0,1,,1.0,,,,PEG155
+Penata Layanan Operasional,S1,Pelaksana,0.0,,0.0,5,1,0,62.5,2,0,5.0,2.0,1,,1.0,,,,PEG156
+Pengelola Umum Operasional,SMA/SMK,Pelaksana,,,0.0,4,1,0,87.5,0,0,3.0,1.0,1,,,,,,PEG157
+Widyaiswara Ahli Pertama,S2,Fungsional,1.0,,0.0,5,1,7,62.5,2,0,6.0,3.0,1,,2.0,,,,PEG158
+Penata Layanan Operasional,S1,Pelaksana,0.0,,0.0,5,1,0,62.5,2,0,5.0,2.0,1,,1.0,,,,PEG159
+Pengolah Data dan Informasi,S1,Pelaksana,,,,5,1,6,62.5,1,0,5.0,2.0,1,,,,,,PEG160
+Penata Layanan Operasional,S1,Pelaksana,0.0,,0.0,5,1,0,87.5,0,0,5.0,2.0,1,,1.0,,,,PEG161
+Pengembang Teknologi Pembelajaran Ahli Pertama,S1,Pelaksana,6.0,18.0,1.0,5,1,6,50.0,2,0,5.0,2.0,1,2.0,3.0,8.0,0,4.0,PEG162
+Pengembang Teknologi Pembelajaran Ahli Pertama,S1,Fungsional,6.0,14.0,1.0,5,1,4,62.5,2,0,5.0,2.0,1,1.0,3.0,7.0,0,5.0,PEG163
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,1,87.5,0,1,3.0,1.0,2,,,,,,PEG164
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,75.0,0,0,3.0,1.0,1,,2.0,,,,PEG165
+Widyaiswara Ahli Pertama,S2,Fungsional,0.0,14.0,1.0,5,1,0,37.5,2,0,6.0,3.0,1,1.0,1.0,6.0,0,6.0,PEG166
+Pranata Laboratorium Pendidikan Terampil,D3,Fungsional,0.0,16.0,1.0,4,1,0,62.5,0,0,4.0,2.0,1,2.0,1.0,6.0,0,6.0,PEG167
+Penata Layanan Operasional,S1,Pelaksana,0.0,,0.0,5,1,0,50.0,1,0,5.0,2.0,1,,1.0,,,,PEG168
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,2.0,,,,PEG169
+Operator Layanan Operasional,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,62.5,1,0,3.0,1.0,1,,2.0,,,,PEG170
+Operator Layanan Operasional,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,2.0,,,,PEG171
+Penata Layanan Operasional,S1,Pelaksana,0.0,,0.0,5,1,0,75.0,1,0,5.0,2.0,1,,1.0,,,,PEG172
+Pengembang Teknologi Pembelajaran Ahli Pertama,S1,Fungsional,0.0,11.0,1.0,5,1,2,75.0,0,0,5.0,2.0,1,1.0,1.0,5.0,0,7.0,PEG173
+Pustakawan Ahli Pertama,S1,Fungsional,0.0,16.0,1.0,5,1,1,62.5,2,1,5.0,2.0,2,2.0,1.0,7.0,0,5.0,PEG174
+Pranata Laboratorium Pendidikan Ahli Pertama,S1,Fungsional,1.0,14.0,1.0,5,1,0,75.0,1,0,5.0,2.0,1,1.0,2.0,6.0,0,6.0,PEG175
+Pranata Hubungan Masyarakat Ahli Pertama,S1,Fungsional,1.0,14.0,1.0,5,1,3,75.0,0,0,5.0,2.0,1,1.0,2.0,6.0,0,6.0,PEG176
+Arsiparis Ahli Pertama,S1,Fungsional,1.0,,0.0,5,1,7,62.5,2,2,5.0,2.0,2,,2.0,,,,PEG177
+Pranata Komputer Ahli Pertama,S1,Fungsional,1.0,12.0,1.0,5,1,4,62.5,1,0,5.0,2.0,1,1.0,2.0,6.0,0,6.0,PEG178
+Arsiparis Ahli Pertama,S1,Fungsional,0.0,16.0,1.0,5,1,0,50.0,2,0,5.0,2.0,1,2.0,1.0,6.0,0,6.0,PEG179
+Penata Kelola Sistem dan Teknologi Informasi,S1,Pelaksana,0.0,13.0,1.0,5,1,0,75.0,1,0,5.0,2.0,1,1.0,1.0,5.0,0,7.0,PEG180
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,50.0,0,0,3.0,1.0,1,,2.0,,,,PEG181
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,,,,,PEG182
+Pranata Laboratorium Pendidikan Ahli Pertama,S1,Fungsional,0.0,14.0,1.0,5,1,10,62.5,1,3,5.0,2.0,3,1.0,1.0,7.0,0,5.0,PEG183
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,2,75.0,0,1,3.0,1.0,2,,2.0,,,,PEG184
+Pranata Laboratorium Pendidikan Terampil,D3,Fungsional,1.0,15.0,1.0,4,1,1,62.5,2,0,4.0,2.0,1,2.0,2.0,7.0,0,5.0,PEG185
+Widyaiswara Ahli Pertama,S2,Fungsional,0.0,14.0,1.0,5,1,0,75.0,0,0,6.0,3.0,1,1.0,1.0,6.0,0,6.0,PEG186
+Widyaiswara Ahli Pertama,S2,Fungsional,0.0,15.0,1.0,5,1,6,62.5,1,3,6.0,3.0,3,2.0,1.0,9.0,1,3.0,PEG187
+Widyaiswara Ahli Pertama,S2,Fungsional,0.0,15.0,1.0,5,1,0,75.0,1,0,6.0,3.0,1,2.0,1.0,7.0,0,5.0,PEG188
+Pranata Laboratorium Pendidikan Ahli Pertama,S1,Fungsional,0.0,13.0,1.0,5,1,0,75.0,1,0,5.0,2.0,1,1.0,1.0,5.0,0,7.0,PEG189
+Pengelola Umum Operasional,SMA/SMK,Pelaksana,0.0,,0.0,4,1,1,87.5,0,1,3.0,1.0,2,,1.0,,,,PEG190
+Pengembang Teknologi Pembelajaran Ahli Pertama,S1,Fungsional,0.0,14.0,1.0,5,1,0,50.0,2,0,5.0,2.0,1,1.0,1.0,5.0,0,7.0,PEG191
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,75.0,0,0,3.0,1.0,1,,2.0,,,,PEG192
+Pranata Laboratorium Pendidikan Ahli Pertama,D4,Fungsional,0.0,14.0,1.0,5,1,0,87.5,0,0,5.0,2.0,1,1.0,1.0,5.0,0,7.0,PEG193
+Pranata Laboratorium Pendidikan Ahli Pertama,S1,Fungsional,0.0,11.0,1.0,5,1,4,62.5,2,0,5.0,2.0,1,1.0,1.0,5.0,0,7.0,PEG194
+Pranata Laboratorium Pendidikan Ahli Pertama,S1,Fungsional,0.0,14.0,1.0,5,1,0,87.5,0,0,5.0,2.0,1,1.0,1.0,5.0,0,7.0,PEG195
+Widyaiswara Ahli Pertama,S2,Fungsional,0.0,14.0,1.0,5,1,0,62.5,2,0,6.0,3.0,1,1.0,1.0,6.0,0,6.0,PEG196
+Pranata Laboratorium Pendidikan Terampil,D3,Fungsional,0.0,15.0,1.0,4,1,0,87.5,0,0,4.0,2.0,1,2.0,1.0,6.0,0,6.0,PEG197
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,,,,,PEG198
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,62.5,1,0,3.0,1.0,1,,2.0,,,,PEG199
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,37.5,0,0,3.0,1.0,1,,2.0,,,,PEG200
+Pranata Laboratorium Pendidikan Ahli Pertama,S1,Fungsional,0.0,13.0,1.0,5,1,0,50.0,3,0,5.0,2.0,1,1.0,1.0,5.0,0,7.0,PEG201
+Penata Kelola Sistem dan Teknologi Informasi,S1,Pelaksana,0.0,14.0,1.0,5,1,0,62.5,0,0,5.0,2.0,1,1.0,1.0,5.0,0,7.0,PEG202
+Pranata Laboratorium Pendidikan Terampil,S1,Fungsional,0.0,13.0,1.0,4,1,0,75.0,0,0,5.0,3.0,1,1.0,1.0,6.0,0,6.0,PEG203
+Operator Layanan Operasional,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,2.0,,,,PEG204
+Arsiparis Terampil,D3,Fungsional,0.0,15.0,1.0,4,1,0,50.0,0,0,4.0,2.0,1,2.0,1.0,6.0,0,6.0,PEG205
+Operator Layanan Operasional,SMA/SMK,Pelaksana,,,0.0,4,0,0,75.0,0,0,3.0,1.0,1,,,,,,PEG206
+Pengadministrasi Perkantoran,SMA/SMK,Pelaksana,0.0,,0.0,4,0,0,87.5,0,0,3.0,1.0,1,,2.0,,,,PEG207
