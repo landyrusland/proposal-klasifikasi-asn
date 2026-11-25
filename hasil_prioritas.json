@@ -1,0 +1,239 @@
+{
+ "kompetensi": {
+  "lengkap": 115,
+  "total_pegawai": 207,
+  "sesuai": 35,
+  "belum": 80,
+  "aspek": {
+   "k_formal": {
+    "1.0": 26,
+    "2.0": 46,
+    "3.0": 43
+   },
+   "k_nonformal": {
+    "1": 104,
+    "2": 8,
+    "3": 3
+   },
+   "k_terampil": {
+    "1.0": 45,
+    "2.0": 60,
+    "3.0": 10
+   },
+   "k_alaman": {
+    "1.0": 22,
+    "2.0": 8,
+    "3.0": 85
+   }
+  },
+  "sebaran_total": {
+   "5.0": 10,
+   "6.0": 22,
+   "7.0": 25,
+   "8.0": 23,
+   "9.0": 29,
+   "10.0": 4,
+   "11.0": 2
+  }
+ },
+ "ahp": {
+  "matriks": [
+   [
+    1.0,
+    2.0,
+    3.0,
+    4.0,
+    6.0
+   ],
+   [
+    0.5,
+    1.0,
+    2.0,
+    3.0,
+    5.0
+   ],
+   [
+    0.3333333333333333,
+    0.5,
+    1.0,
+    2.0,
+    4.0
+   ],
+   [
+    0.25,
+    0.3333333333333333,
+    0.5,
+    1.0,
+    3.0
+   ],
+   [
+    0.16666666666666666,
+    0.2,
+    0.25,
+    0.3333333333333333,
+    1.0
+   ]
+  ],
+  "kriteria": [
+   "K1 Kesenjangan kompetensi",
+   "K2 Peluang tidak Sangat Baik",
+   "K3 Defisit pengembangan",
+   "K4 Ketidakhadiran",
+   "K5 Masa kerja"
+  ],
+  "bobot": [
+   0.4201,
+   0.2652,
+   0.1638,
+   0.1026,
+   0.0484
+  ],
+  "lmaks": 5.0988,
+  "CI": 0.0247,
+  "RI": 1.12,
+  "CR": 0.022
+ },
+ "topsis": {
+  "jumlah": 115,
+  "sepuluh": [
+   {
+    "peringkat": 1,
+    "kode": "PEG189",
+    "jabatan": "Pranata Laboratorium Pendidikan Ahli Pertama",
+    "K1": 7.0,
+    "K2": 0.9,
+    "K3": 2.0,
+    "K4": 25.0,
+    "K5": 0.0,
+    "C": 0.8187
+   },
+   {
+    "peringkat": 2,
+    "kode": "PEG180",
+    "jabatan": "Penata Kelola Sistem dan Teknologi Informasi",
+    "K1": 7.0,
+    "K2": 0.871,
+    "K3": 2.0,
+    "K4": 25.0,
+    "K5": 0.0,
+    "C": 0.8141
+   },
+   {
+    "peringkat": 3,
+    "kode": "PEG193",
+    "jabatan": "Pranata Laboratorium Pendidikan Ahli Pertama",
+    "K1": 7.0,
+    "K2": 0.936,
+    "K3": 2.0,
+    "K4": 12.5,
+    "K5": 0.0,
+    "C": 0.8039
+   },
+   {
+    "peringkat": 4,
+    "kode": "PEG195",
+    "jabatan": "Pranata Laboratorium Pendidikan Ahli Pertama",
+    "K1": 7.0,
+    "K2": 0.889,
+    "K3": 2.0,
+    "K4": 12.5,
+    "K5": 0.0,
+    "C": 0.7986
+   },
+   {
+    "peringkat": 5,
+    "kode": "PEG034",
+    "jabatan": "Operator Layanan Operasional",
+    "K1": 6.0,
+    "K2": 0.893,
+    "K3": 2.0,
+    "K4": 12.5,
+    "K5": 35.0,
+    "C": 0.7828
+   },
+   {
+    "peringkat": 6,
+    "kode": "PEG007",
+    "jabatan": "Operator Layanan Operasional",
+    "K1": 5.0,
+    "K2": 0.902,
+    "K3": 2.0,
+    "K4": 100.0,
+    "K5": 17.0,
+    "C": 0.7804
+   },
+   {
+    "peringkat": 7,
+    "kode": "PEG201",
+    "jabatan": "Pranata Laboratorium Pendidikan Ahli Pertama",
+    "K1": 7.0,
+    "K2": 0.669,
+    "K3": 2.0,
+    "K4": 50.0,
+    "K5": 0.0,
+    "C": 0.7761
+   },
+   {
+    "peringkat": 8,
+    "kode": "PEG197",
+    "jabatan": "Pranata Laboratorium Pendidikan Terampil",
+    "K1": 6.0,
+    "K2": 0.921,
+    "K3": 2.0,
+    "K4": 12.5,
+    "K5": 0.0,
+    "C": 0.7714
+   },
+   {
+    "peringkat": 9,
+    "kode": "PEG205",
+    "jabatan": "Arsiparis Terampil",
+    "K1": 6.0,
+    "K2": 0.744,
+    "K3": 2.0,
+    "K4": 50.0,
+    "K5": 0.0,
+    "C": 0.7711
+   },
+   {
+    "peringkat": 10,
+    "kode": "PEG175",
+    "jabatan": "Pranata Laboratorium Pendidikan Ahli Pertama",
+    "K1": 6.0,
+    "K2": 0.787,
+    "K3": 2.0,
+    "K4": 25.0,
+    "K5": 1.0,
+    "C": 0.7595
+   }
+  ],
+  "C_statistik": {
+   "min": 0.1349,
+   "maks": 0.8187,
+   "rerata": 0.5162
+  }
+ },
+ "sensitivitas": {
+  "K1 Kesenjangan kompetensi x0.5": 9,
+  "K1 Kesenjangan kompetensi x0.75": 10,
+  "K1 Kesenjangan kompetensi x1.25": 9,
+  "K1 Kesenjangan kompetensi x1.5": 9,
+  "K2 Peluang tidak Sangat Baik x0.5": 6,
+  "K2 Peluang tidak Sangat Baik x0.75": 8,
+  "K2 Peluang tidak Sangat Baik x1.25": 10,
+  "K2 Peluang tidak Sangat Baik x1.5": 9,
+  "K3 Defisit pengembangan x0.5": 10,
+  "K3 Defisit pengembangan x0.75": 10,
+  "K3 Defisit pengembangan x1.25": 10,
+  "K3 Defisit pengembangan x1.5": 10,
+  "K4 Ketidakhadiran x0.5": 9,
+  "K4 Ketidakhadiran x0.75": 10,
+  "K4 Ketidakhadiran x1.25": 9,
+  "K4 Ketidakhadiran x1.5": 8,
+  "K5 Masa kerja x0.5": 10,
+  "K5 Masa kerja x0.75": 10,
+  "K5 Masa kerja x1.25": 10,
+  "K5 Masa kerja x1.5": 10
+ },
+ "sens_rerata": 9.3
+}

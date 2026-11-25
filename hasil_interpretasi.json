@@ -1,0 +1,272 @@
+{
+ "konfusi": [
+  [
+   383,
+   66
+  ],
+  [
+   45,
+   122
+  ]
+ ],
+ "penting": [
+  [
+   "Akumulasi pelatihan",
+   0.1644
+  ],
+  [
+   "pendidikan SMA/SMK",
+   0.1313
+  ],
+  [
+   "kelompok pegawai Pelaksana",
+   0.1312
+  ],
+  [
+   "Masa kerja (tahun)",
+   0.1104
+  ],
+  [
+   "Apel tanpa keterangan",
+   0.0812
+  ],
+  [
+   "Persentase kehadiran apel",
+   0.0707
+  ],
+  [
+   "Usia",
+   0.0676
+  ],
+  [
+   "Rerata jam masuk",
+   0.0584
+  ],
+  [
+   "Tidak absen pulang",
+   0.0424
+  ],
+  [
+   "Rerata durasi kerja",
+   0.0405
+  ]
+ ],
+ "odds": [
+  [
+   "Akumulasi pelatihan",
+   1.941
+  ],
+  [
+   "Usia",
+   1.591
+  ],
+  [
+   "Rerata durasi kerja",
+   1.471
+  ],
+  [
+   "Apel tanpa keterangan",
+   1.451
+  ],
+  [
+   "Rerata jam masuk",
+   1.409
+  ],
+  [
+   "status pegawai PPPK PW",
+   0.729
+  ],
+  [
+   "pendidikan SD",
+   0.69
+  ],
+  [
+   "pendidikan tidak diketahui",
+   0.672
+  ],
+  [
+   "kelompok pegawai Pelaksana",
+   0.603
+  ],
+  [
+   "pendidikan SMA/SMK",
+   0.386
+  ]
+ ],
+ "lime": {
+  "Probabilitas tertinggi": {
+   "prob": 0.959,
+   "aktual": 1,
+   "prediksi": 1,
+   "tw": "2026-TW3",
+   "faktor": [
+    [
+     "pendidikan SMA/SMK <= -0.93",
+     0.214
+    ],
+    [
+     "kelompok pegawai Pelaksana <= -1.28",
+     0.1315
+    ],
+    [
+     "status pegawai PPPK PW <= -0.48",
+     0.074
+    ],
+    [
+     "status pegawai PPPK <= -0.59",
+     0.0578
+    ],
+    [
+     "0.14 < Rerata jam masuk <= 0.67",
+     0.0494
+    ],
+    [
+     "-0.42 < Tidak absen pulang <= 0.09",
+     0.0386
+    ]
+   ]
+  },
+  "Probabilitas terendah": {
+   "prob": 0.0,
+   "aktual": 0,
+   "prediksi": 0,
+   "tw": "2026-TW1",
+   "faktor": [
+    [
+     "-0.93 < pendidikan SMA/SMK <= 1.08",
+     -0.213
+    ],
+    [
+     "-1.28 < kelompok pegawai Pelaksana <= 0.78",
+     -0.1315
+    ],
+    [
+     "status pegawai PPPK PW > -0.48",
+     -0.071
+    ],
+    [
+     "status pegawai PPPK <= -0.59",
+     0.0573
+    ],
+    [
+     "Rerata jam masuk <= -0.60",
+     -0.0503
+    ],
+    [
+     "Tidak absen pulang <= -0.67",
+     -0.0459
+    ]
+   ]
+  },
+  "Di sekitar ambang 0,5": {
+   "prob": 0.499,
+   "aktual": 1,
+   "prediksi": 0,
+   "tw": "2026-TW1",
+   "faktor": [
+    [
+     "pendidikan SMA/SMK <= -0.93",
+     0.2131
+    ],
+    [
+     "-1.28 < kelompok pegawai Pelaksana <= 0.78",
+     -0.1291
+    ],
+    [
+     "status pegawai PPPK PW <= -0.48",
+     0.0705
+    ],
+    [
+     "status pegawai PPPK <= -0.59",
+     0.0556
+    ],
+    [
+     "0.14 < Rerata jam masuk <= 0.67",
+     0.0496
+    ],
+    [
+     "Tidak absen pulang <= -0.67",
+     -0.0453
+    ]
+   ]
+  },
+  "Salah klasifikasi (aktual Sangat Baik)": {
+   "prob": 0.001,
+   "aktual": 1,
+   "prediksi": 0,
+   "tw": "2026-TW2",
+   "faktor": [
+    [
+     "-0.93 < pendidikan SMA/SMK <= 1.08",
+     -0.213
+    ],
+    [
+     "-1.28 < kelompok pegawai Pelaksana <= 0.78",
+     -0.128
+    ],
+    [
+     "status pegawai PPPK PW > -0.48",
+     -0.0708
+    ],
+    [
+     "status pegawai PPPK <= -0.59",
+     0.0552
+    ],
+    [
+     "Rerata jam masuk <= -0.60",
+     -0.05
+    ],
+    [
+     "Usia <= -0.57",
+     -0.0411
+    ]
+   ]
+  }
+ },
+ "jaccard": [
+  0.973,
+  0.09
+ ],
+ "lime_agregat": [
+  [
+   "pendidikan SMA/SMK",
+   0.2122
+  ],
+  [
+   "-0.93",
+   0.212
+  ],
+  [
+   "-1.28",
+   0.1312
+  ],
+  [
+   "kelompok pegawai Pelaksana",
+   0.1299
+  ],
+  [
+   "-0.63",
+   0.0946
+  ],
+  [
+   "status pegawai PPPK PW",
+   0.0693
+  ],
+  [
+   "-0.59",
+   0.0573
+  ],
+  [
+   "status pegawai PPPK",
+   0.0567
+  ],
+  [
+   "0.14",
+   0.0488
+  ],
+  [
+   "Tidak absen pulang",
+   0.0469
+  ]
+ ]
+}
