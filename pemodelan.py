@@ -41,6 +41,7 @@ except ImportError:            # pragma: no cover
 # ------------------------------------------------------------------ himpunan fitur
 FITUR_PERILAKU = ['pelatihan_kumulatif', 'masa_kerja_tahun', 'apel_alpa', 'absensi_rata_jam_masuk',
                   'apel_persen_hadir', 'absensi_tanpa_checkout', 'absensi_rata_durasi', 'apel_dinas_luar']
+FITUR_KETERLAMBATAN = ['terlambat_frekuensi']   # hari terlambat per triwulan (presensi harian, sejak Feb 2025)
 FITUR_STRUKTURAL_NUM = ['usia']
 FITUR_STRUKTURAL_KAT = ['pendidikan', 'kelompok_pegawai', 'status_pegawai']
 FITUR_ASESMEN = ['asesmen_integritas', 'asesmen_kerjasama', 'asesmen_komunikasi', 'asesmen_orientasi_pada_hasil',
@@ -52,6 +53,8 @@ LABEL = {
     'apel_alpa': 'Apel tanpa keterangan', 'absensi_rata_jam_masuk': 'Rerata jam masuk',
     'apel_persen_hadir': 'Persentase kehadiran apel', 'absensi_tanpa_checkout': 'Tidak absen pulang',
     'absensi_rata_durasi': 'Rerata durasi kerja', 'apel_dinas_luar': 'Apel saat dinas luar',
+    'terlambat_frekuensi': 'Frekuensi keterlambatan', 'terlambat_persen': 'Persentase hari terlambat',
+    'terlambat_rata_menit': 'Rerata menit terlambat',
     'usia': 'Usia', 'pendidikan': 'Pendidikan', 'kelompok_pegawai': 'Kelompok pegawai',
     'status_pegawai': 'Status pegawai',
     'asesmen_integritas': 'Asesmen integritas', 'asesmen_kerjasama': 'Asesmen kerja sama',
@@ -70,6 +73,19 @@ SKENARIO = {
               kat=FITUR_STRUKTURAL_KAT, asesmen=True),
     'D': dict(nama='D — perilaku saja (tanpa atribut struktural)', num=FITUR_PERILAKU, kat=[], asesmen=False),
 }
+
+for _k in list(SKENARIO):
+    _b = SKENARIO[_k]
+    SKENARIO[_k + '+T'] = dict(nama=_b['nama'] + ' + frekuensi keterlambatan', num=_b['num'] + FITUR_KETERLAMBATAN,
+                               kat=_b['kat'], asesmen=_b['asesmen'])
+
+
+def kunci_skenario(dasar, keterlambatan=True, df=None):
+    """'A' -> 'A+T' bila keterlambatan diminta dan kolomnya tersedia di df."""
+    if keterlambatan and (df is None or all(c in df.columns for c in FITUR_KETERLAMBATAN)):
+        return dasar + '+T'
+    return dasar
+
 
 MODEL_TERSEDIA = ['Regresi Logistik', 'Random Forest'] + (['XGBoost'] if ADA_XGB else [])
 KOLOM_WAJIB = ['tw', 'skp_predikat']
@@ -114,7 +130,8 @@ def normalkan(df):
     for c in FITUR_STRUKTURAL_KAT + ['jabatan']:
         if c in d.columns:
             d[c] = d[c].fillna('Tidak diketahui').astype(str)
-    for c in FITUR_PERILAKU + FITUR_STRUKTURAL_NUM + FITUR_ASESMEN + ['asesmen_tersedia', 'skp_bobot', 'tahun']:
+    for c in (FITUR_PERILAKU + FITUR_KETERLAMBATAN + FITUR_STRUKTURAL_NUM + FITUR_ASESMEN
+              + ['terlambat_persen', 'terlambat_rata_menit', 'asesmen_tersedia', 'skp_bobot', 'tahun']):
         if c in d.columns and not pd.api.types.is_numeric_dtype(d[c]):
             # CSV ekspor Excel berbahasa Indonesia memakai koma sebagai pemisah desimal
             d[c] = pd.to_numeric(d[c].astype(str).str.strip().str.replace(',', '.', regex=False), errors='coerce')
@@ -303,30 +320,91 @@ def jelaskan(lime_pk, baris, n_faktor=8, n_sampel=5000):
 
 
 # ------------------------------------------------------------------ pembagian 80:20
-def bagi_latih_uji(df, porsi_uji=0.2, seed=42):
-    """Membagi dataset per pegawai (semua baris seorang pegawai berada di satu sisi), berstrata menurut
-    kelompok pegawai dan banyaknya predikat Sangat Baik pada label triwulanan asli.
-    Mengembalikan (data_latih, data_uji, ringkasan) dengan kolom asli berkas."""
+def bagi_kode(d, porsi_uji=0.2, seed=42):
+    """Memilih pegawai untuk data uji (pembagian per pegawai, berstrata kelompok pegawai dan banyaknya
+    predikat Sangat Baik pada label triwulanan asli). d: hasil normalkan(). Mengembalikan set kode uji."""
     from sklearn.model_selection import train_test_split
-    d = normalkan(df)
     y = label_biner(d)
     asli = ~np.isnan(y) & ~apakah_replikasi(d)
-    per = pd.DataFrame({'kode': d['kode'], 'sb': np.where(asli, y, 0)}).groupby('kode').sb.sum()
+    per = pd.DataFrame({'kode': d['kode'].values, 'sb': np.where(asli, y, 0)}).groupby('kode').sb.sum()
     kel = d.groupby('kode')['kelompok_pegawai'].first() if 'kelompok_pegawai' in d else pd.Series('-', per.index)
     strata = kel.reindex(per.index).astype(str) + '|' + pd.cut(per, [-1, 0, 1, 99], labels=['0', '1', '2+']).astype(str)
-    kecil = strata.map(strata.value_counts()) < 2
-    strata[kecil] = 'lain'
-    kode_latih, kode_uji = train_test_split(np.asarray(per.index, dtype=object), test_size=porsi_uji, random_state=seed,
-                                            stratify=np.asarray(strata, dtype=object) if strata.value_counts().min() >= 2 else None)
-    m_uji = d['kode'].isin(set(kode_uji)).values
-    latih, uji = df[~m_uji].copy(), df[m_uji].copy()
+    strata[strata.map(strata.value_counts()) < 2] = 'lain'
+    _, kode_uji = train_test_split(np.asarray(per.index, dtype=object), test_size=porsi_uji, random_state=seed,
+                                   stratify=np.asarray(strata, dtype=object) if strata.value_counts().min() >= 2 else None)
+    return set(kode_uji)
 
-    def info(mask):
-        yy = y[mask & asli]
-        return dict(baris=int(mask.sum()), pegawai=int(d.loc[mask, 'kode'].nunique()),
-                    berlabel=int(len(yy)), sangat_baik=int(np.nansum(yy)),
-                    persen_sb=float(100 * np.nanmean(yy)) if len(yy) else float('nan'))
-    return latih, uji, dict(latih=info(~m_uji), uji=info(m_uji), seed=seed, porsi_uji=porsi_uji)
+
+def info_bagian(d):
+    y = label_biner(d)
+    asli = ~np.isnan(y) & ~apakah_replikasi(d)
+    yy = y[asli]
+    return dict(baris=int(len(d)), pegawai=int(d['kode'].nunique()), berlabel=int(len(yy)),
+                sangat_baik=int(np.nansum(yy)), persen_sb=float(100 * np.nanmean(yy)) if len(yy) else float('nan'))
+
+
+def bagi_latih_uji(df, porsi_uji=0.2, seed=42):
+    """Versi untuk berkas mentah: mengembalikan (data_latih, data_uji, ringkasan) dengan kolom asli."""
+    d = normalkan(df)
+    uji = d['kode'].isin(bagi_kode(d, porsi_uji, seed)).values
+    return df[~uji].copy(), df[uji].copy(), dict(latih=info_bagian(d[~uji]), uji=info_bagian(d[uji]),
+                                                 seed=seed, porsi_uji=porsi_uji)
+
+
+# ------------------------------------------------------------------ mutu dan pembersihan data
+BATAS_WAJAR = {
+    'absensi_rata_durasi': (0, 16, 'jam'), 'absensi_rata_jam_masuk': (4, 14, 'jam desimal'),
+    'apel_persen_hadir': (0, 100, '%'), 'usia': (18, 70, 'tahun'), 'masa_kerja_tahun': (0, 45, 'tahun'),
+    'absensi_hari': (0, 92, 'hari'), 'absensi_tanpa_checkout': (0, 92, 'hari'), 'apel_alpa': (0, 92, 'kali'),
+    'apel_dinas_luar': (0, 92, 'kali'), 'pelatihan_jumlah': (0, 60, 'kegiatan'),
+    'pelatihan_kumulatif': (0, 300, 'kegiatan'), 'terlambat_frekuensi': (0, 92, 'hari'),
+}
+for _c in FITUR_ASESMEN:
+    BATAS_WAJAR[_c] = (1, 3, 'skala')
+PREDIKAT_SAH = {'Sangat Baik', 'Baik', 'Butuh Perbaikan', 'Kurang', 'Sangat Kurang'}
+
+
+def periksa_mutu(d):
+    """Laporan mutu: sel kosong per indikator, baris ganda, nilai di luar batas wajar, label tidak sah."""
+    kolom = [c for c in FITUR_PERILAKU + FITUR_KETERLAMBATAN + FITUR_STRUKTURAL_NUM + FITUR_STRUKTURAL_KAT
+             + FITUR_ASESMEN if c in d]
+    kosong = pd.DataFrame({'kolom': kolom, 'indikator': [LABEL.get(c, c) for c in kolom],
+                           'persen_kosong': [100 * d[c].isna().mean() if c not in FITUR_STRUKTURAL_KAT
+                                             else 100 * (d[c] == 'Tidak diketahui').mean() for c in kolom]})
+    ganda = int(d.duplicated(['kode', 'tw']).sum()) if 'tw' in d else 0
+    luar = []
+    for c, (lo, hi, sat) in BATAS_WAJAR.items():
+        if c in d:
+            n = int(((d[c] < lo) | (d[c] > hi)).sum())
+            luar.append(dict(kolom=c, indikator=LABEL.get(c, c), batas=f'{lo}–{hi} {sat}', jumlah=n))
+    label_salah = 0
+    if 'skp_predikat' in d:
+        p = d['skp_predikat'].dropna().astype(str).str.strip()
+        label_salah = int((~p.isin(PREDIKAT_SAH)).sum())
+    return dict(kosong=kosong, ganda=ganda, luar=pd.DataFrame(luar), label_salah=label_salah)
+
+
+def bersihkan(d):
+    """Pembersihan ringan yang aman: buang baris ganda (pegawai-triwulan), kosongkan nilai di luar batas wajar,
+    kosongkan label yang tidak sah. Sel kosong TIDAK diisi nol."""
+    d = d.copy()
+    log = []
+    if 'tw' in d:
+        n = int(d.duplicated(['kode', 'tw'], keep='last').sum())
+        d = d.drop_duplicates(['kode', 'tw'], keep='last')
+        log.append(('Membuang baris ganda pegawai–triwulan (yang terakhir dipertahankan)', n))
+    tot = 0
+    for c, (lo, hi, _) in BATAS_WAJAR.items():
+        if c in d:
+            m = (d[c] < lo) | (d[c] > hi)
+            tot += int(m.sum()); d.loc[m, c] = np.nan
+    log.append(('Mengosongkan nilai di luar batas wajar (mis. durasi kerja > 16 jam)', tot))
+    if 'skp_predikat' in d:
+        p = d['skp_predikat']
+        m = p.notna() & ~p.astype(str).str.strip().isin(PREDIKAT_SAH)
+        d.loc[m, 'skp_predikat'] = np.nan
+        log.append(('Mengosongkan label predikat yang tidak dikenal', int(m.sum())))
+    return d.reset_index(drop=True), log
 
 
 # ------------------------------------------------------------------ bahasa sederhana untuk LIME
@@ -338,7 +416,7 @@ JENIS_FAKTOR = {
 for _c in FITUR_ASESMEN:
     JENIS_FAKTOR[_c] = 'Pengembangan kompetensi'
 for _c in ['apel_alpa', 'absensi_rata_jam_masuk', 'apel_persen_hadir', 'absensi_tanpa_checkout',
-           'absensi_rata_durasi', 'apel_dinas_luar']:
+           'absensi_rata_durasi', 'apel_dinas_luar', 'terlambat_frekuensi']:
     JENIS_FAKTOR[_c] = 'Kedisiplinan dan presensi'
 
 
@@ -346,7 +424,7 @@ def format_nilai(kolom, v):
     """Menampilkan nilai indikator dalam satuan yang mudah dibaca."""
     if v is None or (isinstance(v, float) and np.isnan(v)):
         return 'tidak tercatat'
-    if kolom not in FITUR_PERILAKU + FITUR_STRUKTURAL_NUM + FITUR_ASESMEN:
+    if kolom not in FITUR_PERILAKU + FITUR_KETERLAMBATAN + FITUR_STRUKTURAL_NUM + FITUR_ASESMEN:
         return str(v)
     v = float(v)
     if kolom == 'absensi_rata_jam_masuk':
@@ -367,16 +445,18 @@ def format_nilai(kolom, v):
         return f'{v:.0f} kali'
     if kolom == 'absensi_tanpa_checkout':
         return f'{v:.0f} hari'
+    if kolom == 'terlambat_frekuensi':
+        return f'{v:.0f} hari'
     return f'{v:.1f}'.replace('.', ',').replace(',0', '')
 
 
 def kalimat_aturan(kolom, aturan):
     """Mengubah aturan LIME (mis. '1.00 < Akumulasi pelatihan <= 4.00') menjadi frasa sehari-hari."""
     import re
-    if kolom not in FITUR_PERILAKU + FITUR_STRUKTURAL_NUM + FITUR_ASESMEN:
+    if kolom not in FITUR_PERILAKU + FITUR_KETERLAMBATAN + FITUR_STRUKTURAL_NUM + FITUR_ASESMEN:
         return 'kategori ' + aturan.split('=', 1)[-1] if '=' in aturan else aturan
     SATUAN = {'pelatihan_kumulatif': 'kegiatan', 'apel_alpa': 'kali', 'apel_dinas_luar': 'kali',
-              'absensi_tanpa_checkout': 'hari', 'masa_kerja_tahun': 'tahun', 'usia': 'tahun'}
+              'absensi_tanpa_checkout': 'hari', 'terlambat_frekuensi': 'hari', 'masa_kerja_tahun': 'tahun', 'usia': 'tahun'}
     f = lambda v: format_nilai(kolom, float(v))
     jam = lambda v: f(v).replace('pukul ', '')
     m = re.match(r'^\s*(-?[\d.]+)\s*<\s*.+?\s*<=\s*(-?[\d.]+)\s*$', aturan)
@@ -409,8 +489,12 @@ def kalimat_aturan(kolom, aturan):
     return aturan
 
 
-def jelaskan_rinci(lime_pk, baris, dl, n_faktor=8, n_sampel=5000):
-    """Penjelasan LIME dalam tabel yang terbaca: nilai pegawai, kondisi, arah, besar pengaruh, jenis faktor."""
+def jelaskan_rinci(lime_pk, baris, dl, n_faktor=8, n_sampel=5000, wajib=FITUR_KETERLAMBATAN):
+    """Penjelasan LIME dalam tabel yang terbaca: nilai pegawai, kondisi, arah, besar pengaruh, jenis faktor.
+
+    Satu model pengganti lokal dipasang atas SELURUH fitur, lalu ditampilkan n_faktor terbesar ditambah
+    faktor wajib (bawaan: frekuensi keterlambatan) bila belum termasuk, agar pertimbangan keterlambatan
+    selalu terlihat. Setiap baris memuat peringkat pengaruhnya di antara semua fitur."""
     num = [c for c in lime_pk['kolom'] if c not in lime_pk['kategori']]
     x = baris[lime_pk['kolom']].copy()
     diisi = [c for c in num if pd.isna(x[c])]
@@ -421,11 +505,17 @@ def jelaskan_rinci(lime_pk, baris, dl, n_faktor=8, n_sampel=5000):
     for c, daftar in lime_pk['kategori'].items():
         v = str(x[c]) if pd.notna(x[c]) else 'Tidak diketahui'
         x[c] = daftar.index(v) if v in daftar else 0
-    e = lime_pk['eksp'].explain_instance(x.values.astype(float), lime_pk['fungsi'], num_features=n_faktor,
+    semua = len(lime_pk['kolom'])
+    e = lime_pk['eksp'].explain_instance(x.values.astype(float), lime_pk['fungsi'], num_features=semua,
                                          num_samples=n_sampel, labels=(1,))
     teks = dict(e.as_list(label=1))
+    peta = sorted(e.as_map()[1], key=lambda t: -abs(t[1]))
+    pilih = peta[:n_faktor]
+    for idx_w in peta[n_faktor:]:
+        if lime_pk['kolom'][idx_w[0]] in wajib:
+            pilih.append(idx_w)
     baris_out = []
-    for idx, w in e.as_map()[1]:
+    for idx, w in pilih:
         kol = lime_pk['kolom'][idx]
         aturan = next((t for t in teks if LABEL.get(kol, kol) in t), '')
         nilai = asli[kol]
@@ -437,8 +527,33 @@ def jelaskan_rinci(lime_pk, baris, dl, n_faktor=8, n_sampel=5000):
             kolom=kol, faktor=LABEL.get(kol, kol), bobot=float(w), aturan=aturan,
             nilai=format_nilai(kol, nilai) + (' (diisi median)' if kol in diisi else ''),
             kondisi=kalimat_aturan(kol, aturan), persentil=pct, diisi=kol in diisi,
-            jenis=JENIS_FAKTOR.get(kol, 'Lainnya')))
+            jenis=JENIS_FAKTOR.get(kol, 'Lainnya'),
+            peringkat=1 + [i for i, _ in peta].index(idx), dari=semua, wajib=kol in wajib))
     return baris_out, [LABEL.get(c, c) for c in diisi]
+
+
+def ringkas_keterlambatan(df, kolom='terlambat_frekuensi'):
+    """Rerata dan median frekuensi keterlambatan menurut predikat pada label triwulanan asli."""
+    if kolom not in df:
+        return None
+    y = label_biner(df)
+    asli = ~np.isnan(y) & ~apakah_replikasi(df) & df[kolom].notna().values
+    if asli.sum() < 5:
+        return None
+    t = pd.DataFrame({'sb': y[asli], 'v': df[kolom].values[asli]})
+    out = {}
+    for k, nama in [(1, 'Sangat Baik'), (0, 'Bukan Sangat Baik')]:
+        v = t.v[t.sb == k]
+        out[nama] = dict(n=int(len(v)), rerata=float(v.mean()) if len(v) else np.nan,
+                         median=float(v.median()) if len(v) else np.nan)
+    p = np.nan
+    try:
+        p = float(stats.mannwhitneyu(t.v[t.sb == 1], t.v[t.sb == 0]).pvalue)
+    except ValueError:
+        pass
+    out['p'] = p
+    out['data'] = t
+    return out
 
 
 def kestabilan(paket, dl, baris, n_ulang=5, n_faktor=5):

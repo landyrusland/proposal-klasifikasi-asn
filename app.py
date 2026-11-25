@@ -18,12 +18,14 @@ import plotly.graph_objects as go
 import streamlit as st
 from sklearn.metrics import confusion_matrix
 
+import kualifikasi as kq
 import pemodelan as pm
 
 NAVY, EMAS, ABU = '#263C92', '#C08A00', '#8A8F9A'
 HIJAU, MERAH, BIRUM = '#2E6E4E', '#A4303F', '#ECEFF8'
 URUT = [NAVY, EMAS, ABU, HIJAU, MERAH]
-BAWAAN = 'dataset_penelitian_publik.csv'
+BAWAAN = ('dataset_penelitian_publik_v2.csv' if os.path.exists('dataset_penelitian_publik_v2.csv')
+          else 'dataset_penelitian_publik.csv')
 W = dict(width='stretch')
 
 st.set_page_config(page_title='Dashboard Kinerja Pegawai ASN', page_icon='📊',
@@ -61,24 +63,6 @@ def muat_json(nama):
     return json.load(open(nama, encoding='utf-8')) if os.path.exists(nama) else None
 
 
-def pasang_peta(d, peta):
-    """Menambahkan kolom nama dari peta identitas (hanya di memori, tidak disimpan)."""
-    if peta is None:
-        return d
-    p = peta.copy()
-    p.columns = [c.strip().lower() for c in p.columns]
-    kunci = 'kode_pegawai' if 'kode_pegawai' in p.columns else ('nip' if 'nip' in p.columns else None)
-    if kunci is None or 'nama' not in p.columns:
-        return d
-    peta_nama = dict(zip(p[kunci].astype(str), p['nama'].astype(str).str.strip()))
-    d = d.copy()
-    nama_baru = d['kode'].map(peta_nama)
-    if 'nip' in d.columns:
-        nama_baru = nama_baru.fillna(d['nip'].astype(str).map(peta_nama))
-    d['nama'] = nama_baru.fillna(d['nama'] if 'nama' in d.columns else '').fillna('')
-    return d
-
-
 def sidik(df):
     return int(pd.util.hash_pandas_object(df, index=False).sum() % (2 ** 61))
 
@@ -89,50 +73,73 @@ with st.sidebar:
     st.caption('Landi Ruslandi · NPM 072925025 · Magister Ilmu Komputer UNPAK')
     st.divider()
     st.markdown('**Sumber data**')
-    up_latih = st.file_uploader('Data latih — 80% (CSV)', type=['csv'], key='up_latih',
-                                help='Data berlabel untuk melatih dan memvalidasi model. Bila kosong, dipakai '
-                                     'dataset penelitian bawaan (seluruh pegawai).')
-    up_olah = st.file_uploader('Data uji — 20% (CSV)', type=['csv'], key='up_olah',
-                               help='Pegawai yang tidak ikut dilatih, untuk menguji model. Bila berlabel, kinerja '
-                                    'model pada data ini ikut dihitung.')
-    up_peta = st.file_uploader('Peta identitas — opsional', type=['csv'], key='up_peta',
-                               help='CSV berkolom kode_pegawai (atau nip) dan nama, agar pegawai dapat dicari '
-                                    'berdasarkan nama. Diproses di memori dan tidak disimpan.')
+    up_data = st.file_uploader('Dataset penelitian — 100% (CSV)', type=['csv'], key='up_data',
+                               help='Satu berkas berisi seluruh pegawai dan triwulan. Aplikasi membaginya sendiri '
+                                    'menjadi 80% data latih dan 20% data uji. Bila kosong, dipakai dataset bawaan. '
+                                    'Bila berkas memuat kolom nama, pegawai dapat dicari berdasarkan nama.')
 
 d0 = None
 try:
-    if up_latih is not None:
-        d0 = baca_csv(up_latih.getvalue()); nama_latih = up_latih.name
+    if up_data is not None:
+        d0 = baca_csv(up_data.getvalue()); nama_data = up_data.name
     elif os.path.exists(BAWAAN):
-        d0 = pd.read_csv(BAWAAN); nama_latih = f'{BAWAAN} (bawaan)'
+        d0 = pd.read_csv(BAWAAN); nama_data = f'{BAWAAN} (bawaan)'
 except Exception as e:
-    st.error(f'Data latih gagal dibaca: {e}')
+    st.error(f'Dataset gagal dibaca: {e}')
     st.stop()
 if d0 is None:
-    st.error(f'Berkas **{BAWAAN}** tidak ditemukan dan belum ada data latih yang diunggah. '
-             'Unggah data latih melalui panel kiri atau salin berkas dataset ke folder app.py.')
+    st.error(f'Berkas **{BAWAAN}** tidak ditemukan dan belum ada dataset yang diunggah. '
+             'Unggah dataset melalui panel kiri atau salin berkas dataset ke folder app.py.')
     st.stop()
 
-peta = None
-if up_peta is not None:
-    try:
-        peta = baca_csv(up_peta.getvalue())
-    except Exception as e:
-        st.sidebar.error(f'Peta identitas gagal dibaca: {e}')
-
-d = pasang_peta(pm.normalkan(d0), peta)
-if 'tw' not in d.columns:
-    st.error('Data latih harus memuat kolom **tw** (misalnya 2026-TW1) atau kolom **tahun** dan **triwulan**.')
+d_awal = pm.normalkan(d0)
+if 'tw' not in d_awal.columns:
+    st.error('Dataset harus memuat kolom **tw** (misalnya 2026-TW1) atau kolom **tahun** dan **triwulan**.')
     st.stop()
+d, LOG_BERSIH = pm.bersihkan(d_awal)
 
-do, nama_olah = None, None
-if up_olah is not None:
-    try:
-        do = pasang_peta(pm.normalkan(baca_csv(up_olah.getvalue())), peta); nama_olah = up_olah.name
-        if 'tw' not in do.columns:
-            do['tw'] = 'tanpa periode'
-    except Exception as e:
-        st.sidebar.error(f'Data uji gagal dibaca: {e}')
+
+@st.cache_data(show_spinner=False)
+def pembagian(_d, kunci, porsi, seed):
+    return pm.bagi_kode(_d, porsi, seed)
+
+
+PORSI_UJI = st.session_state.get('bagi_porsi', 20) / 100
+BIBIT = int(st.session_state.get('bagi_seed', 42))
+try:
+    KODE_UJI = pembagian(d, sidik(d), PORSI_UJI, BIBIT)
+except ValueError as e:
+    st.error(f'Dataset tidak dapat dibagi menjadi data latih dan data uji: {e}')
+    st.stop()
+d_lat = d[~d.kode.isin(KODE_UJI)].copy()
+d_uji = d[d.kode.isin(KODE_UJI)].copy()
+LATIH, UJI = NAVY, '#2A9D8F'
+
+@st.cache_data(show_spinner=False)
+def muat_syarat(isi):
+    if isi is not None:
+        t = baca_csv(isi)
+        if 'pendidikan_formal' in t.columns and 'nama_jabatan' in t.columns:
+            return kq.syarat_dari_tugas(t), 'tabel tugas_pegawai yang diunggah'
+        if {'jabatan', 'jenjang_minimal'} <= set(t.columns):
+            if 'syarat_pendidikan' not in t:
+                t['syarat_pendidikan'] = ''
+            return t, 'tabel syarat jabatan yang diunggah'
+        raise ValueError('Tabel harus memuat kolom nama_jabatan dan pendidikan_formal (format tugas_pegawai).')
+    if os.path.exists('syarat_jabatan.csv'):
+        return pd.read_csv('syarat_jabatan.csv'), 'syarat_jabatan.csv (dari tabel tugas_pegawai institusi)'
+    return pd.DataFrame(columns=['jabatan', 'jenjang_minimal', 'syarat_pendidikan']), 'tidak tersedia'
+
+
+_up_syarat = st.session_state.get('up_syarat')
+try:
+    SYARAT, SUMBER_SYARAT = muat_syarat(_up_syarat.getvalue() if _up_syarat is not None else None)
+except Exception as e:
+    st.sidebar.error(f'Tabel syarat jabatan gagal dibaca: {e}')
+    SYARAT, SUMBER_SYARAT = muat_syarat(None)
+ACUAN_RESMI = st.session_state.get('acuan_syarat', 'Tabel tugas jabatan institusi') == 'Tabel tugas jabatan institusi'
+MATRIKS = (kq.matriks_acuan(pd.read_csv('matriks_kompetensi_terisi.csv'), SYARAT, ACUAN_RESMI)
+           if os.path.exists('matriks_kompetensi_terisi.csv') else None)
 
 HM = muat_json('hasil_model.json')
 HI = muat_json('hasil_interpretasi.json')
@@ -148,27 +155,11 @@ with st.sidebar:
     contoh = (pd.read_csv(BAWAAN).head(20) if os.path.exists(BAWAAN) else d0.head(20))
     st.download_button('Unduh contoh format CSV', contoh.to_csv(index=False).encode('utf-8'),
                        'contoh_format_dataset.csv', 'text/csv')
-    st.caption(f'Data latih: `{nama_latih}` · {len(d):,} baris · {d.kode.nunique()} pegawai'.replace(',', '.'))
-    st.caption(f'Data uji: `{nama_olah}` · {len(do):,} baris · {do.kode.nunique()} pegawai'.replace(',', '.')
-               if do is not None else 'Data uji: belum diunggah')
-    with st.expander('Bagi dataset 80:20 per pegawai'):
-        st.caption('Membagi data latih yang sedang dipakai menjadi 80% data latih dan 20% data uji. Semua baris '
-                   'seorang pegawai masuk ke satu sisi, dan proporsi kelompok pegawai serta predikat Sangat Baik '
-                   'dijaga seimbang. Unduh kedua berkas, lalu unggah kembali ke kotak di atas.')
-        bibit = st.number_input('Bibit acak', 0, 9999, 42, help='Bibit yang sama selalu menghasilkan pembagian yang sama.')
-        if st.button('Buat pembagian 80:20'):
-            st.session_state['bagi'] = pm.bagi_latih_uji(d0, 0.2, int(bibit))
-        if 'bagi' in st.session_state:
-            lt, uj, inf = st.session_state['bagi']
-            st.caption(f"Latih: {inf['latih']['pegawai']} pegawai, {inf['latih']['baris']} baris, "
-                       f"SB {rp(inf['latih']['persen_sb'], 1)}% · Uji: {inf['uji']['pegawai']} pegawai, "
-                       f"{inf['uji']['baris']} baris, SB {rp(inf['uji']['persen_sb'], 1)}%")
-            st.download_button('Unduh data latih 80%', lt.to_csv(index=False).encode('utf-8'), 'data_latih_80.csv',
-                               'text/csv')
-            st.download_button('Unduh data uji 20%', uj.to_csv(index=False).encode('utf-8'), 'data_uji_20.csv',
-                               'text/csv')
-    if peta is not None:
-        st.caption('Peta identitas terpasang: pencarian nama aktif.')
+    st.caption(f'Dataset: `{nama_data}` · {len(d):,} baris · {d.kode.nunique()} pegawai'.replace(',', '.'))
+    st.caption(f'Dibagi otomatis per pegawai: data latih {100 - int(PORSI_UJI * 100)}% '
+               f'({d_lat.kode.nunique()} pegawai) · data uji {int(PORSI_UJI * 100)}% ({d_uji.kode.nunique()} pegawai)')
+    if 'nama' in d and d['nama'].astype(str).str.len().gt(0).any():
+        st.caption('Kolom nama terdeteksi: pencarian nama aktif di tab Interpretasi.')
     st.divider()
     st.markdown('**Penyaring data**')
     st.caption('Berlaku untuk tab Ringkasan dan Profil Data.')
@@ -184,10 +175,11 @@ if PEND:
 
 st.title('Klasifikasi dan Prioritas Pengembangan Kompetensi Pegawai ASN')
 st.markdown('<span class="kecil">Studi Kasus pada BBPPMPV Bidang Pertanian · '
-            'identitas pegawai disamarkan menjadi kode berurut</span>', unsafe_allow_html=True)
+            'alur tab mengikuti CRISP-DM: data → persiapan → model → interpretasi → prioritas</span>',
+            unsafe_allow_html=True)
 
-T = st.tabs(['Ringkasan', 'Profil Data', 'Matriks Kompetensi', 'Perbandingan Model',
-             'Latih & Uji Model', 'Interpretasi (LIME)', 'Prioritas AHP-TOPSIS'])
+T = st.tabs(['Ringkasan', 'Profil Data', 'Persiapan Data', 'Matriks Kompetensi', 'Kesesuaian Kualifikasi',
+             'Perbandingan Model', 'Latih & Uji Model', 'Interpretasi (LIME)', 'Prioritas AHP-TOPSIS'])
 
 
 def ada(df, *kolom):
@@ -286,12 +278,149 @@ with T[1]:
     with st.expander('Pratinjau data'):
         st.dataframe(ds.drop(columns=['nama', 'nip'], errors='ignore').head(300), height=320, **W)
 
-# ===================================================== 3. MATRIKS KOMPETENSI
+# ============================================================ 2b. PERSIAPAN DATA
+@st.cache_data(show_spinner=False)
+def demo_transformasi(_d_lat, kunci):
+    """Contoh transformasi skenario D yang dipasang pada data latih saja, serta jumlah kelas sebelum/sesudah SMOTE."""
+    dl = pm.siapkan_latih(_d_lat, 'D')
+    sk = pm.SKENARIO['D']
+    prep = pm.buat_praproses(sk['num'], sk['kat'])
+    X = dl[sk['num']]
+    Xt = prep.fit_transform(X)
+    imp = prep.named_transformers_['num'].named_steps['imp'].transform(X)
+    kosong = X.isna().sum(axis=1)
+    i = int(kosong.idxmax()) if kosong.max() > 0 else 0
+    contoh = pd.DataFrame({'Indikator': [pm.LABEL[c] for c in sk['num']],
+                           'Nilai asli': [pm.format_nilai(c, X.iloc[i][c]) for c in sk['num']],
+                           'Setelah imputasi median': [pm.format_nilai(c, imp[i, j]) for j, c in enumerate(sk['num'])],
+                           'Setelah standardisasi': [rp(Xt[i, j], 2) for j in range(len(sk['num']))]})
+    y = dl._y.values
+    sebelum = np.bincount(y, minlength=2)
+    sesudah = sebelum.copy()
+    if pm.ADA_SMOTE:
+        _, yr = pm.SMOTE(random_state=0).fit_resample(Xt, y)
+        sesudah = np.bincount(yr, minlength=2)
+    return contoh, dl.loc[i, 'kode'], dl.loc[i, 'tw'], sebelum, sesudah
+
+
 with T[2]:
-    if HP is None:
-        st.info('Berkas `hasil_prioritas.json` tidak ditemukan, sehingga bagian ini kosong.')
+    st.subheader('Persiapan data')
+    st.caption('Tahap Data Preparation pada CRISP-DM: memeriksa mutu data, membersihkannya, lalu mengubahnya agar '
+               'siap dipakai model. Tahap 1–3 dijalankan otomatis setiap kali dataset dimuat.')
+    mutu = pm.periksa_mutu(d_awal)
+    n_luar = int(mutu['luar'].jumlah.sum()) if len(mutu['luar']) else 0
+    k = st.columns(5)
+    k[0].metric('Baris', f'{len(d_awal):,}'.replace(',', '.'))
+    k[1].metric('Kolom', d0.shape[1])
+    k[2].metric('Baris ganda', mutu['ganda'])
+    k[3].metric('Nilai tidak wajar', n_luar)
+    k[4].metric('Label tidak sah', mutu['label_salah'])
+
+    st.markdown('##### 1. Pemeriksaan dan pembersihan otomatis')
+    lg = pd.DataFrame(LOG_BERSIH, columns=['Langkah pembersihan', 'Baris atau sel terdampak'])
+    st.dataframe(lg, hide_index=True, **W)
+    if lg['Baris atau sel terdampak'].sum() == 0:
+        st.success('Tidak ada yang perlu dibersihkan: dataset ini sudah melalui pembersihan saat penyusunannya '
+                   '(lihat bagian 4).')
+    with st.expander('Batas wajar yang diperiksa'):
+        st.dataframe(mutu['luar'].rename(columns={'indikator': 'Indikator', 'batas': 'Batas wajar',
+                                                  'jumlah': 'Di luar batas'}).drop(columns='kolom'),
+                     hide_index=True, **W)
+
+    st.markdown('##### 2. Kelengkapan indikator')
+    kos = mutu['kosong'].copy()
+    kos['kelompok'] = np.where(kos.kolom.isin(pm.FITUR_ASESMEN), 'Asesmen',
+                               np.where(kos.kolom.isin(pm.FITUR_PERILAKU + pm.FITUR_KETERLAMBATAN),
+                                        'Perilaku dan pelatihan', 'Atribut pegawai'))
+    kos = kos.sort_values('persen_kosong')
+    f = px.bar(kos, x='persen_kosong', y='indikator', color='kelompok', orientation='h',
+               color_discrete_map={'Perilaku dan pelatihan': NAVY, 'Atribut pegawai': ABU, 'Asesmen': EMAS},
+               text=[f'{v:.1f}%'.replace('.', ',') for v in kos.persen_kosong])
+    f.update_traces(textposition='outside')
+    f.update_layout(height=80 + 22 * len(kos), template='plotly_white', xaxis_title='Baris kosong (%)',
+                    yaxis_title='', xaxis_range=[0, 105], legend=dict(orientation='h', y=1.06, x=0, title=''),
+                    margin=dict(l=10, r=10, t=30, b=10))
+    st.plotly_chart(f, **W)
+    st.info('**Sel kosong tidak diisi nol.** Kosong berarti sumber datanya belum tersedia pada periode itu, '
+            'misalnya absensi elektronik baru tercatat sejak Februari 2025 dan asesmen hanya dimiliki sebagian '
+            'pegawai. Mengisinya dengan nol akan membuat model menyimpulkan pegawai tidak pernah hadir.')
+
+    st.markdown('##### 3. Transformasi untuk model')
+    alur = ['Imputasi median', 'One-hot encoding', 'Standardisasi', 'SMOTE', 'Model']
+    ket = ['mengisi indikator kosong dengan median data latih', 'mengubah kategori menjadi kolom 0/1',
+           'menyamakan skala (rerata 0, simpangan baku 1)', 'menyeimbangkan kelas, hanya pada data latih',
+           'Regresi Logistik · Random Forest · XGBoost']
+    k = st.columns(len(alur))
+    for i_, (a_, b_) in enumerate(zip(alur, ket)):
+        k[i_].markdown(f"""<div style="background:{BIRUM};border-radius:8px;padding:10px;height:112px">
+<div style="color:{EMAS};font-weight:700">{i_ + 1}</div><b style="color:{NAVY}">{a_}</b>
+<div class="kecil">{b_}</div></div>""", unsafe_allow_html=True)
+    st.caption('Seluruh transformasi dipasang hanya pada data latih (di dalam setiap lipatan validasi), lalu diterapkan '
+               'ke data uji. Dengan begitu tidak ada informasi data uji yang bocor ke proses belajar.')
+    if not pm.kolom_kurang(d_lat, 'D') and ('skp_predikat' in d_lat or 'skp_sangat_baik' in d_lat):
+        contoh, kd, tw_c, sebelum, sesudah = demo_transformasi(d_lat, sidik(d_lat))
+        c1, c2 = st.columns([3, 2])
+        with c1:
+            st.markdown(f'**Contoh satu baris data latih ({kd}, {tw_c}) — fitur skenario D**')
+            st.dataframe(contoh, hide_index=True, **W)
+        with c2:
+            st.markdown('**Jumlah kelas pada data latih sebelum dan sesudah SMOTE**')
+            g = go.Figure()
+            g.add_bar(x=['Sebelum SMOTE', 'Sesudah SMOTE'], y=[sebelum[0], sesudah[0]], name='Bukan Sangat Baik',
+                      marker_color=ABU, text=[sebelum[0], sesudah[0]], textposition='inside')
+            g.add_bar(x=['Sebelum SMOTE', 'Sesudah SMOTE'], y=[sebelum[1], sesudah[1]], name='Sangat Baik',
+                      marker_color=EMAS, text=[sebelum[1], sesudah[1]], textposition='inside')
+            g.update_layout(barmode='stack', height=300, template='plotly_white', yaxis_title='Baris',
+                            legend=dict(orientation='h', y=1.12, x=0), margin=dict(l=10, r=10, t=30, b=10))
+            st.plotly_chart(g, **W)
+            st.caption(f'{sesudah[1] - sebelum[1]} baris Sangat Baik sintetis ditambahkan agar kedua kelas seimbang.')
+
+    st.markdown('##### 4. Pembersihan saat penyusunan dataset dari data mentah')
+    st.markdown(
+        '- **Frekuensi keterlambatan** dihitung dari presensi harian (Feb 2025–2026): hari dengan jam datang '
+        'melewati 07.30 (08.00 pada Ramadan 2026), tanpa keterangan izin. Aturan ini cocok 50/50 dengan laporan '
+        'keterlambatan resmi institusi. Triwulan sebelum Feb 2025 dibiarkan kosong.\n'
+        '- **Integrasi** delapan sumber (absensi, apel, pelatihan, asesmen, evaluasi kinerja TW1–TW3 2026, SKP '
+        'tahunan 2024–2025, daftar pegawai) melalui NIP.\n'
+        '- **Pembersihan** catatan terhapus, tanggal tidak wajar, dan durasi kerja di luar 0–16 jam.\n'
+        '- **Agregasi** kehadiran, apel, dan pelatihan menjadi satuan pegawai–triwulan (207 pegawai × 14 triwulan).\n'
+        '- **Penyebaran label tahunan** 2024–2025 ke empat triwulan dengan bobot 0,25.\n'
+        '- **Pengecualian data penugasan**, karena penugasan diberikan sebagai penghargaan atas kinerja.\n'
+        '- **Anonimisasi** NIP dan nama menjadi kode pegawai sebelum data dipakai di luar institusi.')
+    st.caption('Rincian langkah ini ada pada subbab persiapan data di Bab III laporan.')
+
+
+# ===================================================== 3. MATRIKS KOMPETENSI
+OPSI_ACUAN = ['Tabel tugas jabatan institusi', 'Aturan laporan penelitian']
+
+
+def pilih_acuan():
+    st.radio('Acuan syarat pendidikan jabatan', OPSI_ACUAN, horizontal=True, key='acuan_syarat',
+             help='Tabel tugas jabatan institusi: jenjang minimal dari kolom pendidikan_formal tabel tugas_pegawai. '
+                  'Aturan laporan penelitian: aturan yang dipakai pada Bab IV laporan. Pilihan ini juga dipakai '
+                  'tab Prioritas AHP-TOPSIS (kriteria K1).')
+
+
+with T[3]:
+    if MATRIKS is None and HP is None:
+        st.info('Berkas `matriks_kompetensi_terisi.csv` dan `hasil_prioritas.json` tidak ditemukan, sehingga bagian '
+                'ini kosong.')
     else:
-        K = HP['kompetensi']
+        pilih_acuan()
+        if MATRIKS is not None:
+            ML = MATRIKS[MATRIKS.kompetensi_total.notna()]
+            K = dict(lengkap=len(ML), total_pegawai=len(MATRIKS), sesuai=int(ML.kompetensi_sesuai.sum()),
+                     belum=int(len(ML) - ML.kompetensi_sesuai.sum()),
+                     aspek={a_: ML[a_].value_counts().to_dict() for a_ in ['k_formal', 'k_nonformal', 'k_terampil', 'k_alaman']},
+                     sebaran_total=ML.kompetensi_total.value_counts().sort_index().to_dict())
+        else:
+            K = HP['kompetensi']
+        if ACUAN_RESMI and MATRIKS is not None:
+            berubah = int((ML.k_formal != ML.k_formal_laporan).sum())
+            st.info(f'Nilai pendidikan formal memakai **jenjang minimal resmi tiap jabatan** ({SUMBER_SYARAT}). '
+                    f'Dibanding aturan laporan, **{berubah} dari {len(ML)}** pegawai berubah nilai pendidikan '
+                    'formalnya. Angka di tab ini dan peringkat AHP-TOPSIS ikut berubah; hasil Bab IV laporan memakai '
+                    '“Aturan laporan penelitian”.')
         c = st.columns(4)
         c[0].metric('Matriks lengkap', f"{K['lengkap']} / {K['total_pegawai']}",
                     f"{100 * K['lengkap'] / K['total_pegawai']:.1f}% cakupan")
@@ -320,9 +449,161 @@ with T[2]:
         f2.update_layout(height=300, template='plotly_white', xaxis_title='Total nilai (maksimum 12)',
                          yaxis_title='Jumlah pegawai', margin=dict(l=10, r=10, t=30, b=10))
         st.plotly_chart(f2, **W)
+        if MATRIKS is not None:
+            with st.expander('Jenjang minimal per jabatan: aturan laporan dibanding tabel tugas jabatan'):
+                bj = (MATRIKS.groupby('jabatan').agg(pegawai=('kode_pegawai', 'size'), laporan=('jenj_minta', 'first'))
+                      .reset_index())
+                lap = pd.read_csv('matriks_kompetensi_terisi.csv').groupby('jabatan').jenj_minta.first()
+                bj['Aturan laporan'] = bj.jabatan.map(lap).map(kq.NAMA_JENJANG)
+                bj['Tabel tugas jabatan'] = bj.jabatan.map(SYARAT.set_index('jabatan').jenjang_minimal).map(kq.NAMA_JENJANG)
+                bj['Teks syarat'] = bj.jabatan.map(SYARAT.set_index('jabatan').syarat_pendidikan)
+                bj['Beda'] = np.where(bj['Tabel tugas jabatan'].isna(), 'tidak ada di tabel',
+                                      np.where(bj['Aturan laporan'] == bj['Tabel tugas jabatan'], '', 'berbeda'))
+                st.dataframe(bj.drop(columns='laporan').rename(columns={'jabatan': 'Jabatan', 'pegawai': 'Pegawai'}),
+                             hide_index=True, **W)
+
+# ===================================================== 3b. KESESUAIAN KUALIFIKASI
+WARNA_JENJANG = {'Di bawah syarat': MERAH, 'Sesuai syarat': HIJAU, 'Di atas syarat': NAVY, 'Tidak dapat dinilai': ABU}
+WARNA_BIDANG = {'Relevan dengan unit': HIJAU, 'Kurang relevan dengan unit': MERAH, 'Bidang tidak spesifik': EMAS,
+                'Bidang tidak diketahui': ABU, 'Tidak dinilai (pendidikan SLTA)': '#C9CDD6',
+                'Unit kerja kosong/tidak terpetakan': '#DADDE3'}
+
+
+@st.cache_data(show_spinner=False)
+def hitung_kesesuaian(_d, kunci, _syarat, kunci_syarat):
+    akhir = _d.sort_values('tw').groupby('kode').tail(1).copy()
+    kol = [c for c in ['kode', 'nama', 'jabatan', 'pendidikan', 'unit_kerja', 'unit_kerja_2026', 'kelompok_pegawai',
+                       'bidang_pendidikan', 'tw'] if c in akhir]
+    hasil = kq.nilai_kesesuaian(akhir[kol], _syarat)
+    if 'skp_predikat' in _d:
+        y = pm.label_biner(_d); asli = ~np.isnan(y) & ~pm.apakah_replikasi(_d)
+        sb = pd.Series(y[asli], index=_d.kode.values[asli]).groupby(level=0).agg(['sum', 'size'])
+        hasil['sb_triwulan'] = hasil.kode.map(sb['sum']).fillna(0).astype(int)
+        hasil['label_triwulan'] = hasil.kode.map(sb['size']).fillna(0).astype(int)
+    return hasil
+
+
+with T[4]:
+    st.subheader('Kesesuaian kualifikasi pendidikan dengan jabatan dan unit kerja')
+    st.caption('Dua pemeriksaan per pegawai (data triwulan terakhir): **jenjang pendidikan** dibanding jenjang minimal '
+               'jabatan menurut tabel tugas jabatan institusi, dan **bidang ilmu** dibanding rumpun bidang yang relevan '
+               'bagi unit kerjanya.')
+    if not ada(d, 'jabatan', 'pendidikan'):
+        st.error('Dataset harus memuat kolom **jabatan** dan **pendidikan**.')
+    else:
+        with st.expander(f'Acuan yang dipakai · syarat jabatan: {SUMBER_SYARAT}'):
+            st.file_uploader('Ganti tabel syarat jabatan (CSV tugas_pegawai: nama_jabatan, pendidikan_formal)',
+                             type=['csv'], key='up_syarat',
+                             help='Unggah ekspor terbaru tabel tugas_pegawai bila analisis jabatan diperbarui.')
+            a1, a2, a3 = st.tabs(['Syarat jabatan', 'Gelar → bidang ilmu', 'Unit → bidang relevan'])
+            with a1:
+                st.dataframe(SYARAT.assign(jenjang=SYARAT.jenjang_minimal.map(kq.NAMA_JENJANG))
+                             .rename(columns={'jabatan': 'Jabatan', 'jenjang_minimal': 'Kode jenjang',
+                                              'jenjang': 'Jenjang minimal', 'syarat_pendidikan': 'Teks pada tabel'}),
+                             hide_index=True, height=300, **W)
+                st.caption('Jenjang minimal = jenjang terendah yang disebut pada kolom pendidikan_formal '
+                           '(mis. “SLTA – D-1 – D-3” → SLTA). Kode: SLTA 3 · Diploma 4 · S-1/D-4 5 · S-2 6 · S-3 7.')
+            with a2:
+                st.dataframe(pd.DataFrame(sorted(kq.acuan_gelar().items()), columns=['Gelar', 'Bidang ilmu']),
+                             hide_index=True, height=300, **W)
+                st.caption('Ubah berkas `acuan_gelar.csv` untuk menambah atau mengoreksi gelar.')
+            with a3:
+                st.dataframe(pd.DataFrame([(x, y_, ', '.join(z)) for x, y_, z in kq.acuan_unit()],
+                                          columns=['Rumpun unit', 'Kata kunci nama unit', 'Bidang yang relevan']),
+                             hide_index=True, **W)
+                st.caption('Ubah berkas `acuan_rumpun_unit.csv` (pisahkan bidang dengan titik koma).')
+        KS = hitung_kesesuaian(d, sidik(d), SYARAT, sidik(SYARAT))
+        kol_unit = 'unit_kerja_2026' if 'unit_kerja_2026' in KS and KS.unit_kerja_2026.notna().any() else 'unit_kerja'
+        if kol_unit not in KS:
+            KS[kol_unit] = 'Tidak diketahui'
+        KS['unit_tampil'] = KS[kol_unit].fillna('(unit kosong)')
+        dinilai = KS[KS.status_jenjang != 'Tidak dapat dinilai']
+        vb = KS.status_bidang_unit.value_counts()
+        k = st.columns(5)
+        k[0].metric('Pegawai dinilai', f'{len(dinilai)} / {len(KS)}')
+        for kol_, lab in zip(k[1:4], ['Sesuai syarat', 'Di atas syarat', 'Di bawah syarat']):
+            n_ = int((KS.status_jenjang == lab).sum())
+            kol_.metric(f'Jenjang {lab.lower()}', f'{n_} ({100 * n_ / max(len(dinilai), 1):.0f}%)')
+        n_rel = int(vb.get('Relevan dengan unit', 0) + vb.get('Kurang relevan dengan unit', 0))
+        k[4].metric('Bidang kurang relevan', f"{int(vb.get('Kurang relevan dengan unit', 0))} / {n_rel}",
+                    help='Dari pegawai yang bidang ilmunya dapat dikenali dari gelar.')
+        if (KS.status_jenjang == 'Di bawah syarat').any():
+            bw = KS[KS.status_jenjang == 'Di bawah syarat'].jabatan.value_counts()
+            st.warning('**Jenjang di bawah syarat minimal** terutama pada: ' +
+                       ', '.join(f'{j} ({n})' for j, n in bw.head(4).items()) +
+                       '. Pegawai ini menjadi kandidat tugas belajar atau penyesuaian jabatan.')
+
+        def bilah_unit(kolom, warna, judul):
+            n_u = KS.unit_tampil.value_counts()
+            t = KS.groupby(['unit_tampil', kolom]).size().reset_index(name='n')
+            t['persen'] = 100 * t.n / t.unit_tampil.map(n_u)
+            t['unit'] = t.unit_tampil.map(lambda u: f'{u} ({n_u[u]})')
+            urut_u = [f'{u} ({n_u[u]})' for u in n_u.index[::-1]]
+            f = px.bar(t, y='unit', x='persen', color=kolom, orientation='h', color_discrete_map=warna,
+                       category_orders={'unit': urut_u, kolom: list(warna)}, custom_data=['n'],
+                       text=[str(v) if p_ >= 6 else '' for v, p_ in zip(t.n, t.persen)])
+            f.update_traces(hovertemplate='%{y}<br>%{customdata[0]} pegawai (%{x:.0f}%)<extra></extra>',
+                            textposition='inside', insidetextanchor='middle')
+            f.update_layout(height=110 + 30 * len(urut_u), template='plotly_white', title=judul,
+                            xaxis=dict(title='% pegawai di unit (angka di batang = jumlah pegawai)', range=[0, 100]),
+                            yaxis_title='', legend=dict(orientation='h', y=-0.12, x=0, title='', yanchor='top'),
+                            margin=dict(l=10, r=10, t=40, b=90))
+            st.plotly_chart(f, **W)
+
+        bilah_unit('status_jenjang', WARNA_JENJANG, 'Jenjang pendidikan terhadap syarat jabatan, per unit kerja')
+        bilah_unit('status_bidang_unit', WARNA_BIDANG, 'Bidang ilmu terhadap rumpun unit kerja')
+        st.caption('Bidang ilmu diperkirakan dari **gelar akademik** (mis. S.Pi. → perikanan, S.Kom. → komputer) atau dari '
+                   'kolom `bidang_pendidikan`. Gelar umum seperti M.Si. atau A.Md. tidak menunjukkan bidang tertentu. '
+                   'Pegawai berpendidikan SLTA tidak dinilai bidangnya. Hasil ini **indikatif** dan perlu dicocokkan '
+                   'dengan ijazah.')
+
+        if 'sb_triwulan' in KS and KS.label_triwulan.sum() > 0:
+            with st.expander('Kaitan dengan predikat kinerja (label triwulanan asli)'):
+                g = KS[KS.label_triwulan > 0].groupby('status_jenjang').agg(
+                    pegawai=('kode', 'size'), sb=('sb_triwulan', 'sum'), label=('label_triwulan', 'sum')).reset_index()
+                g['persen_sb'] = 100 * g.sb / g.label
+                f = px.bar(g, x='status_jenjang', y='persen_sb', color='status_jenjang', color_discrete_map=WARNA_JENJANG,
+                           text=[f'{v:.0f}% ({s_} dari {l_})' for v, s_, l_ in zip(g.persen_sb, g.sb, g.label)])
+                f.update_traces(textposition='outside')
+                f.update_layout(height=280, template='plotly_white', showlegend=False, xaxis_title='',
+                                yaxis_title='% baris Sangat Baik', yaxis_range=[0, max(60, g.persen_sb.max() * 1.3)],
+                                margin=dict(l=10, r=10, t=10, b=10))
+                st.plotly_chart(f, **W)
+                st.caption('Deskriptif, bukan sebab-akibat: jenjang di atas syarat banyak dimiliki pejabat fungsional '
+                           'yang memang lebih sering memperoleh Sangat Baik.')
+
+        st.markdown('**Daftar pegawai**')
+        c = st.columns([1.3, 1.3, 1.3, 1.6])
+        f_unit = c[0].multiselect('Unit kerja', sorted(KS.unit_tampil.unique()), key='ks_unit')
+        f_jen = c[1].multiselect('Status jenjang', list(WARNA_JENJANG), key='ks_jen')
+        f_bid = c[2].multiselect('Status bidang–unit', list(WARNA_BIDANG), key='ks_bid')
+        cari_k = c[3].text_input('Cari nama, kode, atau jabatan', key='ks_cari')
+        tb = KS.copy()
+        if f_unit:
+            tb = tb[tb.unit_tampil.isin(f_unit)]
+        if f_jen:
+            tb = tb[tb.status_jenjang.isin(f_jen)]
+        if f_bid:
+            tb = tb[tb.status_bidang_unit.isin(f_bid)]
+        if cari_k.strip():
+            teks = (tb.get('nama', pd.Series('', index=tb.index)).astype(str) + ' ' + tb.kode.astype(str) + ' ' +
+                    tb.jabatan.astype(str)).str.lower()
+            tb = tb[teks.str.contains(cari_k.strip().lower(), regex=False)]
+        tb['Jenjang minimal'] = tb.jenjang_minimal_jabatan.map(kq.NAMA_JENJANG).fillna('–')
+        kol = ([('nama', 'Nama')] if 'nama' in tb and tb.nama.astype(str).str.len().gt(0).any() else []) + [
+            ('kode', 'Kode'), ('jabatan', 'Jabatan'), ('unit_tampil', 'Unit kerja'), ('pendidikan', 'Pendidikan'),
+            ('Jenjang minimal', 'Jenjang minimal'), ('status_jenjang', 'Status jenjang'),
+            ('bidang_pendidikan', 'Bidang (dari gelar)'), ('rumpun_unit', 'Rumpun unit'),
+            ('status_bidang_unit', 'Status bidang–unit')]
+        tampil = tb[[a_ for a_, _ in kol]].rename(columns=dict(kol))
+        tampil['Bidang (dari gelar)'] = tampil['Bidang (dari gelar)'].replace('', '–')
+        st.dataframe(tampil, hide_index=True, height=380, **W)
+        st.download_button('Unduh hasil kesesuaian (CSV)', tampil.to_csv(index=False).encode('utf-8'),
+                           'kesesuaian_kualifikasi.csv', 'text/csv')
+        st.caption(f'{len(tampil)} pegawai ditampilkan.')
 
 # ====================================================== 4. PERBANDINGAN MODEL (hasil penelitian)
-with T[3]:
+with T[5]:
     st.caption('Hasil tersimpan dari penelitian (Bab IV). Untuk melatih ulang pada data Anda sendiri, '
                'gunakan tab **Latih & Uji Model**.')
     if HM is None or HD is None:
@@ -365,6 +646,11 @@ with T[3]:
             tn, fp, fn, tp = cm.ravel()
             st.caption(f'TN {tn} · FP {fp} · FN {fn} · TP {tp}')
 
+
+# Tab model dan interpretasi bekerja pada hasil pembagian: d = data latih, do = data uji.
+d_semua = d
+d, do = d_lat, d_uji
+nama_latih, nama_olah = f'data latih {100 - int(PORSI_UJI * 100)}%', f'data uji {int(PORSI_UJI * 100)}%'
 
 # ====================================================== 5. LATIH & UJI MODEL
 def gambar_konfusi(cm, tinggi=280):
@@ -427,7 +713,7 @@ KAMUS = [
 ]
 
 
-with T[4]:
+with T[6]:
     cfg = None
     L = st.session_state.get('latih')
     # evaluasi hanya memakai label triwulanan asli (label tahunan replikasi tidak dihitung)
@@ -435,33 +721,92 @@ with T[4]:
     uji_berlabel = do is not None and np.isfinite(y_uji).sum() >= 10
     st.subheader('Alur pengolahan machine learning')
     k = st.columns(4)
-    kotak_langkah(k[0], '1', 'Data latih', f'{d.kode.nunique()} pegawai · {len(d):,} baris'.replace(',', '.'), True)
-    kotak_langkah(k[1], '2', 'Data uji',
-                  (f'{do.kode.nunique()} pegawai · {len(do):,} baris'.replace(',', '.') +
-                   ('' if uji_berlabel else ' · tanpa label')) if do is not None else 'unggah di panel kiri',
-                  do is not None)
-    kotak_langkah(k[2], '3', 'Latih dan validasi', 'selesai' if L else 'tekan tombol Latih di bawah', L is not None)
-    kotak_langkah(k[3], '4', 'Uji dan jelaskan', 'hasil uji di bawah · LIME di tab Interpretasi'
-                  if (L and uji_berlabel) else 'menunggu langkah 2 dan 3', bool(L and uji_berlabel))
-    if do is not None:
-        tumpang = set(do.kode) & set(d.kode)
-        if tumpang:
-            st.error(f'{len(tumpang)} pegawai ada di data latih **dan** data uji. Hasil uji menjadi terlalu optimistis. '
-                     'Gunakan berkas hasil pembagian 80:20 per pegawai (panel kiri → Bagi dataset 80:20).')
+    kotak_langkah(k[0], '1', 'Pembagian data', f'latih {100 - int(PORSI_UJI * 100)}%: {d.kode.nunique()} pegawai · '
+                  f'uji {int(PORSI_UJI * 100)}%: {do.kode.nunique()} pegawai', True)
+    kotak_langkah(k[1], '2', 'Latih dan validasi', 'selesai' if L else 'tekan tombol Latih di bawah', L is not None)
+    kotak_langkah(k[2], '3', 'Uji pada data uji', 'hasil di bawah' if (L and uji_berlabel) else 'menunggu langkah 2',
+                  bool(L and uji_berlabel))
+    kotak_langkah(k[3], '4', 'Jelaskan per pegawai', 'buka tab Interpretasi (LIME)' if L else 'menunggu langkah 2',
+                  L is not None)
     mode = st.radio('Tampilan hasil', ['Sederhana', 'Rinci'], horizontal=True, key='mode_ml',
                     help='Sederhana: ringkasan dalam kalimat. Rinci: seluruh tabel statistik seperti di laporan.')
     sederhana = mode == 'Sederhana'
     st.divider()
 
-    st.markdown('#### Langkah 3 — Latih dan validasi')
+    # ---------------------------------------------------------------- langkah 1: pembagian
+    st.markdown(f'#### Langkah 1 — Pembagian data latih ({100 - int(PORSI_UJI * 100)}%) dan data uji ({int(PORSI_UJI * 100)}%)')
+    st.caption('Dataset dibagi **per pegawai**: seluruh triwulan seorang pegawai masuk ke satu sisi, sehingga model '
+               'diuji pada pegawai yang belum pernah dilihatnya. Pembagian berstrata menurut kelompok pegawai dan '
+               'banyaknya predikat Sangat Baik, agar kedua sisi sebanding.')
+    iL, iU = pm.info_bagian(d), pm.info_bagian(do)
+    k = st.columns(4)
+    k[0].metric('Pegawai data latih', iL['pegawai'], help='Dipakai model untuk belajar dan validasi silang.')
+    k[1].metric('Pegawai data uji', iU['pegawai'], help='Tidak pernah dilihat model saat belajar.')
+    k[2].metric('Baris latih · uji', f"{iL['baris']:,} · {iU['baris']:,}".replace(',', '.'))
+    k[3].metric('Sangat Baik latih · uji', f"{rp(iL['persen_sb'], 1)}% · {rp(iU['persen_sb'], 1)}%",
+                help='Persentase pada label triwulanan asli. Angka yang mirip berarti pembagiannya seimbang.')
+    c1, c2, c3 = st.columns([1, 1, 1.3])
+    with c1:
+        g = go.Figure(go.Pie(labels=['Data latih', 'Data uji'], values=[iL['pegawai'], iU['pegawai']], hole=.62,
+                             marker_colors=[LATIH, UJI], sort=False, textinfo='percent',
+                             hovertemplate='%{label}: %{value} pegawai<extra></extra>'))
+        g.update_layout(height=270, margin=dict(l=10, r=10, t=40, b=10), title='Pembagian pegawai',
+                        legend=dict(orientation='h', y=-0.05, x=0.1),
+                        annotations=[dict(text=f'<b>{100 - int(PORSI_UJI * 100)} : {int(PORSI_UJI * 100)}</b>', showarrow=False, font=dict(size=20, color=NAVY))])
+        st.plotly_chart(g, **W)
+    with c2:
+        g = go.Figure()
+        for nama_, inf_, w_ in [('Data latih', iL, LATIH), ('Data uji', iU, UJI)]:
+            g.add_bar(x=[nama_], y=[inf_['persen_sb']], marker_color=w_, showlegend=False,
+                      text=[f"{rp(inf_['persen_sb'], 1)}%<br>({inf_['sangat_baik']} dari {inf_['berlabel']})"],
+                      textposition='outside')
+        g.update_layout(height=270, template='plotly_white', title='Proporsi Sangat Baik', yaxis_range=[0, 45],
+                        yaxis_title='% baris berlabel triwulanan', margin=dict(l=10, r=10, t=40, b=10))
+        st.plotly_chart(g, **W)
+    with c3:
+        if 'kelompok_pegawai' in d:
+            kom = pd.concat([d.drop_duplicates('kode').assign(Sisi='Data latih'),
+                             do.drop_duplicates('kode').assign(Sisi='Data uji')])
+            kom = (kom.groupby(['Sisi', 'kelompok_pegawai']).size() / kom.groupby('Sisi').size() * 100).reset_index(name='persen')
+            g = px.bar(kom, x='kelompok_pegawai', y='persen', color='Sisi', barmode='group',
+                       color_discrete_map={'Data latih': LATIH, 'Data uji': UJI},
+                       text=[f'{v:.0f}%' for v in kom.persen])
+            g.update_traces(textposition='outside')
+            g.update_layout(height=270, template='plotly_white', title='Komposisi kelompok pegawai', xaxis_title='',
+                            yaxis_title='% pegawai', yaxis_range=[0, kom.persen.max() * 1.4],
+                            legend=dict(orientation='h', y=1.12, x=0.4, title=''), margin=dict(l=10, r=10, t=40, b=10))
+            st.plotly_chart(g, **W)
+    with st.expander('Pengaturan dan unduhan pembagian data'):
+        a = st.columns([1, 1, 2])
+        a[0].select_slider('Porsi data uji (%)', [10, 15, 20, 25, 30], value=20, key='bagi_porsi',
+                           help='Bawaan 20% sesuai arahan pembimbing.')
+        a[1].number_input('Bibit acak', 0, 9999, 42, key='bagi_seed',
+                          help='Bibit yang sama selalu menghasilkan pembagian yang sama, sehingga dapat diulang.')
+        a[2].caption('Mengubah porsi atau bibit akan membagi ulang dataset; latih ulang model setelahnya.')
+        b_ = st.columns(2)
+        b_[0].download_button('Unduh data latih (CSV)', d.drop(columns='kode').to_csv(index=False).encode('utf-8'),
+                              f'data_latih_{100 - int(PORSI_UJI * 100)}.csv'.format(), 'text/csv')
+        b_[1].download_button('Unduh data uji (CSV)', do.drop(columns='kode').to_csv(index=False).encode('utf-8'),
+                              f'data_uji_{int(PORSI_UJI * 100)}.csv'.format(), 'text/csv')
+    st.divider()
+
+    st.markdown(f'#### Langkah 2 — Latih dan validasi pada data latih ({100 - int(PORSI_UJI * 100)}%)')
     if 'skp_predikat' not in d.columns and 'skp_sangat_baik' not in d.columns:
         st.error('Data latih tidak memuat kolom label **skp_predikat** (atau **skp_sangat_baik**).')
     else:
         c = st.columns([1.5, 2.1])
-        sk = c[0].radio('Himpunan fitur', list(pm.SKENARIO), index=2, format_func=lambda k: pm.SKENARIO[k]['nama'],
-                        help='Skenario D direkomendasikan karena tidak memuat atribut yang tidak dapat diubah '
-                             '(pendidikan, kelompok pegawai, status, usia).')
+        sk_dasar = c[0].radio('Himpunan fitur', ['A', 'C', 'D'], index=2, format_func=lambda k: pm.SKENARIO[k]['nama'],
+                              help='Skenario D direkomendasikan karena tidak memuat atribut yang tidak dapat diubah '
+                                   '(pendidikan, kelompok pegawai, status, usia).')
         model_dipilih = c[1].multiselect('Model yang dibandingkan', pm.MODEL_TERSEDIA, default=pm.MODEL_TERSEDIA)
+        ada_telat = all(k_ in d.columns for k_ in pm.FITUR_KETERLAMBATAN)
+        telat = c[1].checkbox('Sertakan frekuensi keterlambatan', value=ada_telat, disabled=not ada_telat,
+                              key='pakai_telat',
+                              help='Jumlah hari terlambat per triwulan dari presensi harian. Bila dicentang, '
+                                   'faktor ini selalu ditampilkan pada penjelasan LIME.')
+        if not ada_telat:
+            c[1].caption('Kolom `terlambat_frekuensi` tidak ada pada dataset.')
+        sk = pm.kunci_skenario(sk_dasar, telat, d)
         rep_tahun = []
         with st.expander('Pengaturan lanjutan', expanded=not sederhana):
             a = st.columns(3)
@@ -514,7 +859,7 @@ with T[4]:
                                   cm=confusion_matrix(yy, (pr >= .5).astype(int), labels=[0, 1]))
 
         # ---- ringkasan dalam kalimat
-        st.markdown('#### Ringkasan hasil')
+        st.markdown('#### Langkah 3 — Hasil validasi dan uji')
         if R is not None:
             urut = sorted(R, key=lambda m: -R[m]['rerata']['f1'])
             terbaik = urut[0]
@@ -698,6 +1043,15 @@ with T[4]:
 
 
 # ============================================================ 6. INTERPRETASI (LIME)
+def kekuatan(r):
+    """Besar pengaruh satu faktor LIME berdasarkan peringkatnya di antara seluruh faktor."""
+    if abs(r['bobot']) < 0.01:
+        return 'sangat kecil'
+    if r['peringkat'] <= 3:
+        return 'besar'
+    return 'sedang' if r['peringkat'] <= max(3, r['dari'] // 2) else 'kecil'
+
+
 def tindak_lanjut(rinci, p_e, predikat_akt, sesuai):
     """Catatan tindak lanjut berbasis aturan, selaras dengan temuan Bab IV."""
     out = []
@@ -716,11 +1070,32 @@ def tindak_lanjut(rinci, p_e, predikat_akt, sesuai):
     if tetap / total > .4:
         out.append(f'🏷️ **{tetap / total:.0%} pengaruh berasal dari atribut yang tidak dapat diubah** (usia, '
                    'pendidikan, kelompok, masa kerja). Untuk menilai perilaku kerja, gunakan skenario D.')
-    if any(r['jenis'] == 'Kedisiplinan dan presensi' and r['bobot'] > 0 and r['kolom'] != 'absensi_tanpa_checkout'
-           for r in rinci):
+    if any(r['jenis'] == 'Kedisiplinan dan presensi' and r['bobot'] > 0
+           and r['kolom'] not in ('absensi_tanpa_checkout', 'terlambat_frekuensi') for r in rinci):
         out.append('ℹ️ Pada data penelitian ini, hubungan kehadiran dengan predikat **berlawanan dugaan** '
                    '(Subbab 4.6.3). Faktor kehadiran yang menaikkan peluang jangan dibaca sebagai saran mengurangi '
                    'kedisiplinan.')
+    if 'terlambat_frekuensi' in f:
+        r = f['terlambat_frekuensi']
+        nol = r['nilai'].startswith('0 ')
+        if r['diisi']:
+            out.append('⏰ Frekuensi keterlambatan **tidak tercatat** pada triwulan ini (presensi harian baru ada sejak '
+                       'Februari 2025), sehingga tidak dapat menjadi pertimbangan.')
+        elif kekuatan(r) in ('kecil', 'sangat kecil'):
+            out.append(f"⏰ Frekuensi keterlambatan ({r['nilai']}) pengaruhnya **{kekuatan(r)}** (peringkat "
+                       f"{r['peringkat']} dari {r['dari']}): **bukan penentu** predikat pegawai ini pada triwulan ini.")
+        elif r['bobot'] < 0 and not nol:
+            out.append(f"⏰ **Keterlambatan {r['nilai']} menurunkan peluang.** Kedisiplinan jam datang termasuk hal "
+                       'yang dapat diperbaiki pegawai bila ingin mencapai Sangat Baik.')
+        elif r['bobot'] < 0:
+            out.append('⏰ Pegawai ini **tidak pernah terlambat**, tetapi model sedikit menurunkan peluang untuk kelompok '
+                       'ini. Itu cermin pola data (pegawai Sangat Baik rata-rata lebih sering terlambat), bukan saran '
+                       'untuk datang terlambat.')
+        elif nol:
+            out.append('⏰ **Tidak pernah terlambat** dan hal ini **menaikkan** peluang Sangat Baik.')
+        else:
+            out.append(f"⏰ Keterlambatan {r['nilai']} **tidak menurunkan** peluang. Pola ini berlawanan dugaan dan "
+                       'hanya asosiasi; keterlambatan tetap pelanggaran disiplin.')
     if sesuai is False:
         out.append('⚠️ **Prediksi berbeda dengan predikat aktual.** Jangan jadikan hasil model sebagai dasar '
                    'rekomendasi otomatis untuk pegawai ini.')
@@ -729,21 +1104,22 @@ def tindak_lanjut(rinci, p_e, predikat_akt, sesuai):
     return out
 
 
-with T[5]:
+with T[7]:
     st.subheader('Interpretasi per pegawai (LIME)')
     L = st.session_state.get('latih')
     if not pm.ADA_LIME:
         st.error('Pustaka **lime** belum terpasang. Jalankan `pip install -r requirements.txt`.')
     elif L is None:
         st.info('Belum ada model terlatih. Latih model pada tab **Latih & Uji Model**, atau gunakan pelatihan cepat '
-                'dengan pengaturan penelitian (skenario D, Random Forest).')
-        if 'skp_predikat' in d.columns and not pm.kolom_kurang(d, 'D'):
-            if st.button('Latih cepat: skenario D · Random Forest', type='primary'):
+                'dengan pengaturan penelitian (skenario D + frekuensi keterlambatan, Random Forest).')
+        sk_c = pm.kunci_skenario('D', True, d)
+        if 'skp_predikat' in d.columns and not pm.kolom_kurang(d, sk_c):
+            if st.button(f'Latih cepat: skenario {sk_c} · Random Forest', type='primary'):
                 with st.spinner('Melatih model…'):
-                    dl = pm.siapkan_latih(d, 'D')
-                    st.session_state['latih'] = dict(cfg=None, sk='D', ringkas=None, oof={}, dl=dl, ulang=0,
+                    dl = pm.siapkan_latih(d, sk_c)
+                    st.session_state['latih'] = dict(cfg=None, sk=sk_c, ringkas=None, oof={}, dl=dl, ulang=0,
                                                      smote=True, sumber=nama_latih, lime={},
-                                                     paket={'Random Forest': pm.latih_akhir(dl, 'D', 'Random Forest')})
+                                                     paket={'Random Forest': pm.latih_akhir(dl, sk_c, 'Random Forest')})
                 st.rerun()
     else:
         nm_list = list(L['paket'])
@@ -783,7 +1159,7 @@ with T[5]:
             st.warning(f'Tidak ada pegawai yang cocok dengan “{cari}” pada {asal.lower()}.')
         st.caption(f"Model: {nm_e} · {pm.SKENARIO[L['sk']]['nama']} · data: "
                    f"{nama_olah if asal == 'Data uji' else nama_latih}" +
-                   ('' if punya_nama else ' · pencarian nama aktif bila data atau peta identitas memuat kolom nama'))
+                   ('' if punya_nama else ' · pencarian nama aktif bila dataset yang diunggah memuat kolom nama'))
 
         if kode is not None:
             rows = sumber[sumber.kode == kode].sort_values('tw').copy()
@@ -839,8 +1215,8 @@ with T[5]:
             rinci, diisi = L['lime'][kunci]
 
             # ---- narasi
-            naik = [r for r in rinci if r['bobot'] > 0]
-            turun = [r for r in rinci if r['bobot'] < 0]
+            naik = [r for r in rinci if r['bobot'] > 0 and r['peringkat'] <= n_f]
+            turun = [r for r in rinci if r['bobot'] < 0 and r['peringkat'] <= n_f]
             fr = lambda r: f"*{r['faktor'].lower()} {r['nilai']}*"
             narasi = [f"Pada **{tw_e}**, model memperkirakan peluang pegawai ini mencapai predikat Sangat Baik sebesar "
                       f"**{100 * p_e:.0f}%** ({'di atas' if p_e >= .5 else 'di bawah'} ambang 50%)" +
@@ -851,6 +1227,12 @@ with T[5]:
             if naik:
                 narasi.append(('Sebaliknya, ' if turun else 'Peluang terutama ') + '**dinaikkan** oleh ' +
                               ', '.join(fr(r) for r in naik[:2]) + '.')
+            r_t = next((r for r in rinci if r['kolom'] == 'terlambat_frekuensi'), None)
+            if r_t is not None and not r_t['diisi']:
+                narasi.append(f"Frekuensi keterlambatannya **{r_t['nilai']}**; faktor ini "
+                              f"{'menaikkan' if r_t['bobot'] > 0 else 'menurunkan'} peluang dengan pengaruh "
+                              f"**{kekuatan(r_t)}** ({rp(r_t['bobot'], 3)}, peringkat {r_t['peringkat']} dari "
+                              f"{r_t['dari']} faktor).")
             i_tw = pilihan_tw.index(tw_e)
             if i_tw > 0:
                 sebelum = rows.iloc[i_tw - 1]
@@ -865,8 +1247,10 @@ with T[5]:
                 st.markdown('**Faktor yang membentuk peluang**')
                 fa = rinci[::-1]
                 f = go.Figure(go.Bar(
-                    x=[r['bobot'] for r in fa], y=[f"{r['faktor']}: {r['nilai']}" for r in fa], orientation='h',
+                    x=[r['bobot'] for r in fa],
+                    y=[f"{'⏰ ' if r.get('wajib') else ''}{r['faktor']}: {r['nilai']}" for r in fa], orientation='h',
                     marker_color=[HIJAU if r['bobot'] > 0 else MERAH for r in fa],
+                    marker_line=dict(color=[EMAS if r.get('wajib') else 'rgba(0,0,0,0)' for r in fa], width=2),
                     text=[f"{r['bobot']:+.3f}".replace('.', ',') for r in fa], textposition='outside',
                     customdata=[[r['kondisi'], r['jenis']] for r in fa],
                     hovertemplate='%{y}<br>kondisi: %{customdata[0]}<br>%{customdata[1]}<extra></extra>'))
@@ -876,6 +1260,9 @@ with T[5]:
                                 xaxis=dict(title='◀ menurunkan peluang · menaikkan peluang ▶', range=[-batas, batas]),
                                 margin=dict(l=10, r=20, t=10, b=10))
                 st.plotly_chart(f, **W)
+                if any(r.get('wajib') and r['peringkat'] > n_f for r in rinci):
+                    st.caption('⏰ Frekuensi keterlambatan selalu ditampilkan sebagai pertimbangan, walaupun '
+                               'pengaruhnya di luar faktor teratas.')
             with c2:
                 st.markdown('**Catatan dan tindak lanjut**')
                 for t in tindak_lanjut(rinci, p_e, baris['predikat'], sesuai):
@@ -896,6 +1283,66 @@ with T[5]:
                     else:
                         st.warning(f'Indeks Jaccard {rp(j)} — penjelasan **{vonis}**; tafsirkan dengan hati-hati.')
 
+            # ---- keterlambatan sebagai pertimbangan predikat Sangat Baik
+            with st.container(border=True):
+                st.markdown('**⏰ Frekuensi keterlambatan sebagai pertimbangan predikat Sangat Baik**')
+                RK = pm.ringkas_keterlambatan(d)
+                if 'terlambat_frekuensi' not in rows:
+                    st.info('Dataset tidak memuat kolom `terlambat_frekuensi`.')
+                else:
+                    t1, t2 = st.columns([1.1, 1])
+                    with t1:
+                        m = st.columns(3)
+                        m[0].metric('Hari terlambat', pm.format_nilai('terlambat_frekuensi', baris['terlambat_frekuensi'])
+                                    .replace(' terlambat', ''), help='Jam datang melewati 07.30 tanpa keterangan izin.')
+                        if 'terlambat_persen' in rows:
+                            m[1].metric('Dari hari hadir', '–' if pd.isna(baris['terlambat_persen'])
+                                        else f"{rp(baris['terlambat_persen'], 1)}%")
+                        if 'terlambat_rata_menit' in rows:
+                            m[2].metric('Rerata per hari terlambat', '–' if pd.isna(baris['terlambat_rata_menit'])
+                                        else f"{rp(baris['terlambat_rata_menit'], 0)} menit")
+                        kal_t = []
+                        if r_t is None:
+                            kal_t.append('Model yang dipilih **tidak memakai** frekuensi keterlambatan. Centang '
+                                         '“Sertakan frekuensi keterlambatan” di tab Latih & Uji Model lalu latih ulang '
+                                         'agar LIME menimbangnya.')
+                        elif r_t['diisi']:
+                            kal_t.append('Keterlambatan triwulan ini tidak tercatat, jadi LIME memakai nilai median dan '
+                                         'pengaruhnya tidak mencerminkan pegawai.')
+                        else:
+                            kuat = kekuatan(r_t)
+                            kal_t.append(f"Menurut LIME, keterlambatan **{r_t['nilai']}** "
+                                         f"**{'menaikkan' if r_t['bobot'] > 0 else 'menurunkan'}** peluang Sangat Baik "
+                                         f"(pengaruh {rp(r_t['bobot'], 3)}; peringkat {r_t['peringkat']} dari "
+                                         f"{r_t['dari']} faktor — pengaruhnya **{kuat}**).")
+                        if RK:
+                            a_, b_ = RK['Sangat Baik'], RK['Bukan Sangat Baik']
+                            kal_t.append(f"Pada data latih, pegawai **Sangat Baik** rata-rata terlambat "
+                                         f"**{rp(a_['rerata'], 1)} hari** per triwulan (median {a_['median']:.0f}), "
+                                         f"sedangkan **bukan Sangat Baik** {rp(b_['rerata'], 1)} hari "
+                                         f"(median {b_['median']:.0f})" +
+                                         (f"; perbedaannya {'bermakna' if RK['p'] < .05 else 'tidak bermakna'} "
+                                          f"(Mann–Whitney p = {rp(RK['p'], 4)})." if pd.notna(RK['p']) else '.'))
+                            if a_['rerata'] > b_['rerata'] and RK['p'] < .05:
+                                kal_t.append('Arah ini **berlawanan dugaan**: penilaian kinerja (SKP) lebih ditentukan '
+                                             'capaian hasil kerja daripada ketepatan jam datang, dan pegawai Sangat Baik '
+                                             'banyak berasal dari jabatan fungsional yang jam kerjanya lebih lentur. '
+                                             'Keterlambatan tetap pelanggaran disiplin dan tidak boleh dibaca sebagai '
+                                             'hal yang menguntungkan.')
+                        st.markdown('\n\n'.join(kal_t))
+                    with t2:
+                        if RK:
+                            dat = RK['data'].assign(Predikat=np.where(RK['data'].sb == 1, 'Sangat Baik', 'Bukan SB'))
+                            f = px.box(dat, x='v', y='Predikat', color='Predikat', orientation='h', points=False,
+                                       color_discrete_map={'Sangat Baik': EMAS, 'Bukan SB': ABU})
+                            if pd.notna(baris['terlambat_frekuensi']):
+                                f.add_vline(x=float(baris['terlambat_frekuensi']), line_color=NAVY, line_width=3,
+                                            annotation_text='pegawai ini', annotation_position='top')
+                            f.update_layout(height=230, template='plotly_white', showlegend=False, yaxis_title='',
+                                            xaxis_title='Hari terlambat per triwulan (data latih, label triwulanan)',
+                                            margin=dict(l=10, r=10, t=30, b=10))
+                            st.plotly_chart(f, **W)
+
             # ---- tabel rincian faktor
             st.markdown('**Rincian faktor**')
             def posisi(r):
@@ -906,7 +1353,8 @@ with T[5]:
             tb = pd.DataFrame([{'Arah': '▲ menaikkan' if r['bobot'] > 0 else '▼ menurunkan',
                                 'Faktor': r['faktor'], 'Nilai pegawai': r['nilai'],
                                 'Kelompok nilai menurut LIME': r['kondisi'], 'Posisi': posisi(r),
-                                'Pengaruh': f"{r['bobot']:+.3f}".replace('.', ','), 'Jenis faktor': r['jenis']}
+                                'Pengaruh': f"{r['bobot']:+.3f}".replace('.', ','),
+                                'Peringkat': f"{r['peringkat']} dari {r['dari']}", 'Jenis faktor': r['jenis']}
                                for r in rinci])
             st.dataframe(tb, hide_index=True, **W)
 
@@ -964,6 +1412,9 @@ with T[5]:
                     'pengaruhnya pada triwulan ini.\n'
                     '- **Kelompok nilai menurut LIME** adalah rentang tempat nilai pegawai berada; LIME menilai '
                     'pengaruh rentang itu, bukan angka persisnya.\n'
+                    '- **Frekuensi keterlambatan** (⏰) selalu ditampilkan walaupun pengaruhnya kecil, agar terlihat '
+                    'apakah kedisiplinan jam datang ikut menentukan predikat Sangat Baik.\n'
+                    '- **Peringkat** menunjukkan urutan besar pengaruh faktor itu di antara seluruh faktor model.\n'
                     '- **Jenis faktor**: *pengembangan kompetensi* dapat diintervensi lewat pelatihan; *kedisiplinan '
                     'dan presensi* perlu dibaca bersama mutu pencatatan; *atribut tetap* tidak dapat diubah.\n'
                     '- Penjelasan bersifat lokal: berlaku untuk pegawai dan triwulan ini saja, dan bersifat asosiatif, '
@@ -971,7 +1422,8 @@ with T[5]:
             unduh = pd.DataFrame([{'kode': kode, 'triwulan': tw_e, 'model': nm_e, 'peluang_sb': round(p_e, 4),
                                    'predikat_aktual': baris['predikat'], 'faktor': r['faktor'],
                                    'nilai_pegawai': r['nilai'], 'kelompok_nilai': r['kondisi'],
-                                   'pengaruh': round(r['bobot'], 4), 'jenis_faktor': r['jenis']} for r in rinci])
+                                   'pengaruh': round(r['bobot'], 4), 'peringkat_pengaruh': r['peringkat'],
+                                   'jenis_faktor': r['jenis']} for r in rinci])
             st.download_button('Unduh penjelasan (CSV)', unduh.to_csv(index=False).encode('utf-8'),
                                f'penjelasan_lime_{kode}_{tw_e}.csv', 'text/csv')
 
@@ -1025,8 +1477,10 @@ with T[5]:
                 st.caption(f"Ambang pada penelitian dalam skala terstandardisasi. Kestabilan penjelasan (indeks Jaccard): "
                            f"{rp(HD['jaccard'][0])} ± {rp(HD['jaccard'][1])}")
 
+d = d_semua
+
 # ====================================================== 7. PRIORITAS AHP-TOPSIS
-with T[6]:
+with T[8]:
     if HP is None:
         st.info('Berkas `hasil_prioritas.json` tidak ditemukan, sehingga bagian ini kosong.')
     else:
@@ -1072,6 +1526,14 @@ with T[6]:
                      'peringkat ditafsirkan.')
         if os.path.exists('peringkat_prioritas_topsis.csv'):
             alt = pd.read_csv('peringkat_prioritas_topsis.csv')
+            if MATRIKS is not None:
+                k1 = 12 - alt.kode_pegawai.map(MATRIKS.set_index('kode_pegawai').kompetensi_total)
+                n_ubah = int((k1.notna() & (k1 != alt.K1)).sum())
+                alt['K1'] = k1.fillna(alt.K1)
+                st.caption(f'K1 (kesenjangan kompetensi = 12 − total matriks) dihitung dengan acuan '
+                           f'“{st.session_state.get("acuan_syarat", OPSI_ACUAN[0])}”' +
+                           (f'; {n_ubah} pegawai berbeda nilai K1 dari laporan.' if n_ubah else '; sama dengan laporan.') +
+                           ' Acuan dapat diganti di tab Matriks Kompetensi.')
             X = alt[['K1', 'K2', 'K3', 'K4', 'K5']].astype(float).values
             R = X / np.sqrt((X ** 2).sum(axis=0)); V = R * w
             Dp = np.sqrt(((V - V.max(0)) ** 2).sum(1)); Dn = np.sqrt(((V - V.min(0)) ** 2).sum(1))

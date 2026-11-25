@@ -13,15 +13,20 @@ Studi Kasus pada BBPPMPV Bidang Pertanian
 |---|---|
 | `app.py` | Aplikasi dashboard Streamlit |
 | `pemodelan.py` | Modul pemodelan: penyiapan data, pelatihan, validasi, uji Nadeau–Bengio, LIME |
-| `dataset_penelitian_publik.csv` | Dataset anonim bawaan, 2.898 baris × 45 kolom |
+| `kualifikasi.py` | Modul deteksi kesesuaian kualifikasi pendidikan dengan jabatan dan unit kerja |
+| `dataset_penelitian_publik_v2.csv` | Dataset anonim bawaan, 2.898 baris × 55 kolom (versi 2: frekuensi keterlambatan, syarat jabatan, unit 2026) |
+| `dataset_penelitian_publik.csv` | Dataset anonim versi 1 (cadangan; dipakai bila versi 2 tidak ada) |
+| `syarat_jabatan.csv` | Jenjang pendidikan minimal 24 jabatan, diturunkan dari tabel `tugas_pegawai` institusi |
+| `acuan_gelar.csv` | Acuan gelar akademik → bidang ilmu (dapat diubah) |
+| `acuan_rumpun_unit.csv` | Acuan unit kerja → bidang ilmu yang relevan (dapat diubah) |
+| `peta_unit_2026.csv` | Padanan nama unit lama pada dataset dengan struktur unit 2026 (tabel `unit`) |
+| `matriks_kompetensi_terisi.csv` | Matriks kompetensi 207 pegawai (anonim), dasar perhitungan ulang K-formal dan K1 |
 | `peringkat_prioritas_topsis.csv` | Peringkat prioritas 115 pegawai beserta nilai kriteria |
 | `hasil_model.json` | Metrik skenario A, B, C dan uji kebermaknaan (hasil penelitian) |
 | `hasil_skenarioD.json` | Metrik skenario D, kepentingan fitur, odds ratio, LIME (hasil penelitian) |
 | `hasil_interpretasi.json` | Kepentingan fitur dan matriks konfusi skenario A (hasil penelitian) |
 | `hasil_prioritas.json` | Matriks kompetensi, bobot AHP, hasil TOPSIS (hasil penelitian) |
 | `requirements.txt` | Daftar pustaka yang dibutuhkan |
-| `data_80_20/data_latih_80.csv` | 80% pegawai (165 pegawai, 2.310 baris) untuk melatih model |
-| `data_80_20/data_uji_20.csv` | 20% pegawai (42 pegawai, 588 baris) untuk menguji model |
 
 Seluruh berkas harus berada dalam satu folder yang sama dengan `app.py`.
 
@@ -59,27 +64,59 @@ Peramban terbuka otomatis pada `http://localhost:8501`. Hentikan dengan `Ctrl + 
 
 ---
 
-## Alur pemakaian (skema 80:20)
+## Alur pemakaian
 
-1. **Unggah data latih:** `data_80_20/data_latih_80.csv` ke kotak *Data latih — 80%*.
-2. **Unggah data uji:** `data_80_20/data_uji_20.csv` ke kotak *Data uji — 20%*.
-3. **Opsional, agar bisa dicari dengan nama:** unggah `peta_identitas_v3.csv` (berkas lokal Anda, berkolom `kode_pegawai`, `nip`, `nama`) ke kotak *Peta identitas*.
-4. **Tab “Latih & Uji Model”:** pilih skenario, lalu tekan **Latih dan validasi model**.
-5. **Tab “Interpretasi (LIME)”:** ketik nama atau kode pegawai.
+1. **Unggah satu berkas dataset utuh (100%)** pada panel kiri. Bila kosong, dipakai `dataset_penelitian_publik_v2.csv`. Bila berkas memuat kolom `nama` (misalnya `dataset_penelitian_triwulan.csv` milik Anda), pegawai dapat dicari berdasarkan nama.
+2. **Tab “Persiapan Data”:** periksa mutu data dan pembersihan otomatis.
+3. **Tab “Latih & Uji Model”:**
+   - Langkah 1 menampilkan pembagian otomatis 80% data latih dan 20% data uji.
+   - Langkah 2: pilih skenario, lalu tekan **Latih dan validasi model**.
+4. **Tab “Interpretasi (LIME)”:** ketik nama atau kode pegawai.
+5. **Tab “Kesesuaian Kualifikasi”:** periksa kesesuaian jenjang dan bidang pendidikan tiap pegawai dengan jabatan dan unit kerjanya.
 
-### Cara pembagian 80:20
+### Tab Kesesuaian Kualifikasi
 
-Pembagian dilakukan **per pegawai**: semua triwulan seorang pegawai berada di satu sisi, sehingga model diuji pada pegawai yang benar-benar belum pernah dilihatnya. Pembagian juga **berstrata** menurut kelompok pegawai dan banyaknya predikat Sangat Baik, sehingga proporsinya seimbang (Sangat Baik 26,9% pada data latih dan 28,0% pada data uji). Bibit acaknya 42, jadi hasilnya selalu sama.
+- **Jenjang:** pendidikan pegawai dibanding jenjang minimal jabatan pada kolom `pendidikan_formal` tabel `tugas_pegawai`. Jenjang minimal adalah jenjang terendah yang disebut (misalnya “SLTA – D-1 – D-3” berarti SLTA). Status: *di bawah*, *sesuai*, atau *di atas syarat*.
+- **Bidang ilmu terhadap unit kerja:** bidang ilmu diperkirakan dari gelar akademik pada nama (S.Pi. → perikanan, S.Kom. → komputer, dan seterusnya) atau dari kolom `bidang_pendidikan`. Bidang itu lalu dicocokkan dengan rumpun bidang yang relevan bagi unit kerja. Hasil ini **indikatif** dan perlu dicocokkan dengan ijazah. Pegawai berpendidikan SLTA tidak dinilai bidangnya.
+- Grafik per unit kerja, saringan unit dan status, pencarian nama, serta unduhan CSV.
+- Tabel acuan dapat diperiksa di bagian *Acuan yang dipakai*. Bila analisis jabatan diperbarui, unggah ekspor terbaru tabel `tugas_pegawai` di bagian itu.
 
-Pembagian baru untuk dataset lain dapat dibuat dari panel kiri, menu **Bagi dataset 80:20 per pegawai**.
+### Acuan syarat pendidikan pada matriks kompetensi
+
+Tab **Matriks Kompetensi** memiliki pilihan acuan:
+
+- **Tabel tugas jabatan institusi** (bawaan). Nilai pendidikan formal, total matriks, dan K1 pada AHP-TOPSIS dihitung ulang memakai jenjang minimal resmi.
+- **Aturan laporan penelitian.** Angka sama persis dengan Bab IV laporan.
+
+### Frekuensi keterlambatan dalam LIME
+
+- Kolom `terlambat_frekuensi` berisi jumlah hari terlambat per triwulan. Hari dihitung terlambat bila jam datang melewati 07.30 (08.00 pada Ramadan 2026) tanpa keterangan izin. Kolom ini tersedia sejak Februari 2025.
+- Pada tab Latih & Uji Model, kotak **Sertakan frekuensi keterlambatan** aktif secara bawaan dan menambahkan fitur ini ke skenario yang dipilih (misalnya D + T).
+- Pada tab LIME, faktor ini **selalu ditampilkan** (tanda ⏰), walaupun pengaruhnya di luar faktor teratas, lengkap dengan peringkat pengaruhnya.
+- Panel khusus membandingkan keterlambatan pegawai dengan sebaran keterlambatan pegawai Sangat Baik dan bukan Sangat Baik.
+
+### Pembagian 80:20 di dalam aplikasi
+
+Aplikasi membagi dataset **per pegawai**: semua triwulan seorang pegawai berada di satu sisi, sehingga model diuji pada pegawai yang belum pernah dilihatnya. Pembagian juga **berstrata** menurut kelompok pegawai dan banyaknya predikat Sangat Baik.
+
+Pada dataset penelitian, hasilnya 165 pegawai latih (2.310 baris, Sangat Baik 26,9%) dan 42 pegawai uji (588 baris, Sangat Baik 28,0%). Bibit acak bawaannya 42, jadi pembagian selalu sama.
+
+Porsi uji, bibit acak, dan unduhan kedua bagian ada di Langkah 1, pada bagian *Pengaturan dan unduhan pembagian data*.
 
 Evaluasi pada data uji hanya memakai **label triwulanan asli**. Label tahunan 2024–2025 yang disebar ke empat triwulan ditampilkan dengan tanda “(tahunan)” dan tidak dihitung.
+
+### Tab Persiapan Data
+
+1. **Pemeriksaan mutu dan pembersihan otomatis:** membuang baris ganda pegawai–triwulan, mengosongkan nilai di luar batas wajar (misalnya durasi kerja lebih dari 16 jam), dan mengosongkan label yang tidak sah. Sel kosong tidak diisi nol.
+2. **Kelengkapan indikator:** persentase sel kosong per indikator.
+3. **Transformasi untuk model:** imputasi median, one-hot, standardisasi, dan SMOTE, dengan contoh satu baris sebelum dan sesudah transformasi, serta jumlah kelas sebelum dan sesudah SMOTE.
+4. **Ringkasan pembersihan saat penyusunan dataset** dari data mentah.
 
 ## Tampilan hasil yang mudah dibaca
 
 Tab **Latih & Uji Model**:
 
-- **Alur empat langkah:** data latih, data uji, latih, lalu uji dan jelaskan. Langkah yang selesai bertanda ✓.
+- **Alur empat langkah:** pembagian data, latih dan validasi, uji, lalu jelaskan. Langkah yang selesai bertanda ✓.
 - **Tampilan Sederhana (bawaan):**
   - ringkasan hasil dalam kalimat;
   - empat angka utama beserta artinya;
@@ -113,6 +150,8 @@ Pemisah koma atau titik koma, dengan desimal titik atau koma (ekspor Excel berba
 | Fitur skenario D | `pelatihan_kumulatif`, `masa_kerja_tahun`, `apel_alpa`, `absensi_rata_jam_masuk`, `apel_persen_hadir`, `absensi_tanpa_checkout`, `absensi_rata_durasi`, `apel_dinas_luar` |
 | Tambahan skenario A | `usia`, `pendidikan`, `kelompok_pegawai`, `status_pegawai` |
 | Tambahan skenario C | sembilan kolom `asesmen_…` dan `asesmen_tersedia` |
+| Keterlambatan (opsional, dianjurkan) | `terlambat_frekuensi`; tampilan tambahan `terlambat_persen`, `terlambat_rata_menit` |
+| Kesesuaian kualifikasi | `jabatan`, `pendidikan`, `unit_kerja` (opsional `unit_kerja_2026`, `bidang_pendidikan`) |
 | Tampilan (opsional) | `nama`, `jabatan` |
 
 Sel kosong dibiarkan kosong; jangan diisi nol. Indikator yang kosong diisi median data latih pada tahap pemodelan, dan dashboard memberi tanda bila hal itu terjadi.
@@ -122,6 +161,6 @@ Sel kosong dibiarkan kosong; jangan diisi nol. Indikator yang kosong diisi media
 ## Privasi data
 
 - Berkas yang diunggah hanya diproses di memori selama sesi berjalan dan tidak disimpan oleh aplikasi.
-- Nama pegawai hanya tampil bila berkas yang Anda unggah (data atau peta identitas) memuat kolom `nama`. Dataset bawaan tetap anonim.
+- Nama pegawai hanya tampil bila dataset yang Anda unggah memuat kolom `nama`. Dataset bawaan tetap anonim.
 - Jalankan aplikasi secara lokal bila memakai data beridentitas. Jangan mengunggah data beridentitas ke layanan hosting publik.
 - Keluaran dashboard bersifat rekomendatif dan tidak menggantikan kewenangan pejabat penilai.
